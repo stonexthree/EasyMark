@@ -1,10 +1,10 @@
 <template>
   <SearchTool />
   <div class="head-line-container">
-    <div class="logo">MyMarkDoc</div>
+    <div class="logo">EasyMark</div>
     <div class="search-div">
-      <div class="circle-border left-border"></div>
-      <div class="circle-border right-border"></div>
+      <div class="circle-border" id="left-border"></div>
+      <div class="circle-border" id="right-border"></div>
       <n-icon id="search-icon" color="rgba(220,220,220,1)" size="24" class="search-div-icon">
         <Search/>
       </n-icon>
@@ -19,19 +19,22 @@
     <div class="user-profile">
       <div class="slide-div">
         <div class="name-div">
-          <n-icon size="32" color="#1E92A0FF" class="user-icon">
+          <n-icon size="32" :color=iconColor class="user-icon">
             <UserOutlined/>
           </n-icon>
           <div class="user-nickname">{{loginStatus.standardProfile.nickname}}</div>
         </div>
         <div class="account-action-div">
-          <n-icon size="32" color="#1E92A0FF" @click="router.push({name:'accountProfile'})" style="left: 32px" class="profile-icon account-action">
+          <n-icon size="32" :color=iconColor
+                  @click="router.push({name:'accountProfile'})" style="left: 32px" class="profile-icon account-action">
             <UserProfile/>
           </n-icon>
-          <n-icon size="32" color="#1E92A0FF" @click="showSetPasswordModal=true" style="left: 64px" class="password-icon account-action">
+          <n-icon size="32" :color=iconColor
+                  @click="showSetPasswordModal=true" style="left: 64px" class="password-icon account-action">
             <Password/>
           </n-icon>
-          <n-icon size="32" color="#1E92A0FF" @click="clickLogout" style="left: 96px" class="logout-icon account-action">
+          <n-icon size="32" :color=iconColor
+                  @click="clickLogout" style="left: 96px" class="logout-icon account-action">
             <logout/>
           </n-icon>
         </div>
@@ -64,13 +67,14 @@ import {NIcon,NModal} from 'naive-ui'
 import {UserOutlined} from '@vicons/antd'
 import {Command, LetterK, Search} from '@vicons/tabler'
 import {Password, Logout, Document, List, DocumentAdd, StarReview,UserProfile} from '@vicons/carbon'
-import {onMounted,ref,Ref} from 'vue'
+import {onMounted,ref,Ref,computed} from 'vue'
 import {useRouter} from 'vue-router'
 import {loginStatus} from '../globalStatus'
 import {UserApi} from "../api-define";
 import axios from 'axios'
 import SearchTool from './SearchTool.vue'
-import SetPasswordForm from './forms/SetPasswordForm.vue'
+import SetPasswordForm from './sub/SetPasswordForm.vue'
+import {customComponentThemeProvider} from '../theme'
 
 const router = useRouter();
 
@@ -111,6 +115,12 @@ onMounted(()=>{
   loginStatus.registerAction(loadNickname,true);//注册登录成功后的回调*/
 })
 
+//////////////////////
+//样式部分
+const iconColor = computed<any>(()=>{
+  return customComponentThemeProvider.value.colorSet.extension1;
+})
+
 </script>
 
 <style scoped>
@@ -133,8 +143,11 @@ onMounted(()=>{
   width: 300px;
   left: 48px;
   color: #ffffff;
-  font-size: 3em;
+  font-size: 4em;
   user-select: none;
+  line-height: 80px;
+  font-style: italic;
+  text-shadow: 4px -4px 10px #b0a591;
 }
 
 .search-div {
@@ -150,7 +163,7 @@ onMounted(()=>{
 #search-icon {
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
 }
 
 #key-command {
@@ -184,15 +197,18 @@ onMounted(()=>{
   transform: translateX(-50%);
 }
 
-.right-border {
+#right-border {
   left: 100%;
 }
 
+#left-border {
+  left: 0px;
+}
 .search-text {
   display: inline-block;
   font-size: 1.5em;
   position: absolute;
-  left: 20px;
+  left: 25px;
   color: rgba(120, 120, 120, 1);
   user-select: none;
 }

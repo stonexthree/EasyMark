@@ -1,6 +1,6 @@
 <template>
   <div class="component-root" :style="{width:widthPercent+'%' }">
-    <div class="member-area">
+    <div class="member-area" :style="memberAreaStyle">
       <div :class="{'user-name':true,'selected-user-name':selectedMember === member.name}"
            v-for="member in memberArray"
            @click="clickMember(member.name)">
@@ -8,7 +8,7 @@
       </div>
     </div>
     <div class="doc-area">
-      <DocList :docs="docs" :style="{top:'0px',height: '100%'}" :loading="false"/>
+      <DocList :docs-api-config="docApiConfig" :style="{top:'0px',height: '100%'}" :loading="false"/>
     </div>
   </div>
 </template>
@@ -22,10 +22,11 @@ export default {
 <script setup lang="ts">
 import DocList  from "./DocList.vue"
 import {DocInfo} from "../model/models"
-import {ref, onMounted, reactive,Ref} from "vue";
+import {ref, onMounted, reactive,Ref,computed} from "vue";
 import axios from 'axios'
 import {UserApi, DocApi} from '../api-define'
 import {loginStatus} from "../globalStatus";
+import {customComponentThemeProvider,ColorSet} from '../theme'
 
 const memberArray = ref<{ name: string, nickname: string }[]>([]);
 
@@ -41,10 +42,12 @@ function loadMember(mock: boolean, mockSize: number): { name: string, nickname: 
 
 const selectedMember = ref<string>("none")
 const docs:Ref<DocInfo[]> = ref([])
+const docApiConfig = ref<Object>({});
 function clickMember(memberName: string): void {
   selectedMember.value = memberName;
   docs.value = [];
-  axios.request(DocApi.getDocByAuthor(memberName)).then((response) => {
+  docApiConfig.value=DocApi.getDocByAuthor(memberName);
+  /*axios.request(DocApi.getDocByAuthor(memberName)).then((response) => {
     if (response.data.code === '00000') {
       for(const i in response.data.data){
         const row = response.data.data[i];
@@ -55,7 +58,7 @@ function clickMember(memberName: string): void {
       //loginStatus.loginFailed();
     }
   }).catch();
-  console.log(docs.value);
+  console.log(docs.value);*/
 }
 
 function getAllUser(){
@@ -87,12 +90,21 @@ defineProps({
   widthPercent: Number
 })
 
+////////////////////////
+//样式
+const memberAreaStyle = computed<any>(()=>{
+  return {
+    backgroundColor:customComponentThemeProvider.value.colorSet.halfLight
+  }
+})
+const colorSet = computed<ColorSet>(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 </script>
 
-<style scoped>
+<style  scoped>
 .component-root {
   position: absolute;
-  top: 20px;
   width: 100%;
   height: calc(100% - 30px);
   left: 50%;
@@ -114,17 +126,6 @@ defineProps({
   width: 20%;
   min-width: 60px;
   height: 100%;
-  background-color: rgba(15, 22, 39, 1);
-  overflow: scroll;
-}
-
-.member-area2 {
-  position: absolute;
-  left: 0%;
-  width: 20%;
-  min-width: 60px;
-  height: 100%;
-  background-color: transparent;
   overflow: scroll;
 }
 
@@ -133,8 +134,11 @@ defineProps({
   font-size: 1.2em;
   line-height: 40px;
   padding-left: 10px;
-  color: rgba(160, 160, 160, 1);
   user-select: none;
+}
+
+.user-name {
+  color: v-bind(colorSet.fontColor3);
 }
 
 .user-name:hover {
@@ -149,17 +153,17 @@ defineProps({
 
 @keyframes text-shining {
   0% {
-    color: rgba(160, 160, 160, 1);
-    text-shadow: 0 0 5px rgba(160, 160, 160, 1);
+    color: v-bind(colorSet.fontColor3);
+    text-shadow: 0 0 5px v-bind(colorSet.fontColor3);
   }
   100% {
-    color: rgba(240, 240, 240, 1);
-    text-shadow: 0 0 5px rgba(240, 240, 240, 1);
+    color: v-bind(colorSet.fontColor);
+    text-shadow: 0 0 5px v-bind(colorSet.fontColor);
   }
 }
 
 .selected-user-name {
-  background-color: rgba(46, 52, 64, 1);
+  background-color: v-bind(colorSet.deep);
   text-align: center;
 }
 </style>

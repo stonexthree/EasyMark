@@ -1,5 +1,5 @@
 <template>
-  <DocList :result-editable="true" :docs="myDocs" :loading="loading" :width-percent="widthPercent" />
+  <DocList :result-editable="true" :docs-api-config="docApiConfig" :loading="loading" :width-percent="widthPercent" />
 </template>
 
 <script lang="ts">
@@ -24,28 +24,8 @@ defineProps({
   showEditIcon: Boolean
 })
 
-const myDocs:Ref<DocInfo[]> = ref([])
-function getMyDoc(){
-  axios(DocApi.getMyDocs()).then(
-      (response) => {
-        if (response.data.code === '00000') {
-          for (const i in response.data.data) {
-            const doc = response.data.data[i];
-            myDocs.value.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
-          }
-        }
-        if (response.data.code === 'A0200') {
-          //loginStatus.loginFailed();
-        }
-      }
-  ).catch()
-}
-onMounted(
-    ()=>{
-      getMyDoc();
-      loginStatus.registerAction(getMyDoc);
-    }
-)
+const docApiConfig = ref<Object>(DocApi.getMyDocs());
+
 
 </script>
 

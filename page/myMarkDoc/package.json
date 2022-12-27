@@ -29,6 +29,8 @@
     "@milkdown/vue": "^6.4.1",
     "axios": "^1.1.3",
     "material-icons": "^1.13.1",
+    "node-sass": "^8.0.0",
+    "sass-loader": "^13.2.0",
     "vue": "^3.2.41",
     "vue-router": "^4.1.6"
   },

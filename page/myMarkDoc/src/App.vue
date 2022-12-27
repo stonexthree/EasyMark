@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme="polarNightTheme.perSet" :theme-overrides="polarNightTheme.override">
+  <n-config-provider :theme="customComponentThemeProvider.naiveUITheme.perSet" :theme-overrides="customComponentThemeProvider.naiveUITheme.override">
     <n-notification-provider>
       <n-dialog-provider>
         <LoginMask :is-login=loginStatus.isLogin @login-success='loginStatus.loginSuccess()'/>
@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import {NConfigProvider} from 'naive-ui';
 import {loginStatus} from './globalStatus'
-import {polarNightTheme} from './theme.js'
+import {customComponentThemeProvider} from './theme.js'
 import axios from "axios";
 import {UserApi} from "./api-define";
 import { onMounted } from 'vue'
@@ -79,7 +79,7 @@ export default {
 }
 
 #app-content {
-  background-color: rgba(37, 41, 50, 1);
+  background-color: #2E3440;
 }
 
 #side-options {
@@ -92,8 +92,8 @@ export default {
 
 #main-div {
   position: absolute;
-  top: 80px;
-  height: calc(100% - 80px);
+  top: 100px;
+  height: calc(100% - 100px);
   width: calc(100% - 200px);
   left: 200px;
   display: flex;

@@ -23,7 +23,7 @@
                     :columns="columns"
                     :data="accountData"
                     :pagination=false
-                    :bordered="false"
+                    :bordered="true"
                     :single-line="true"
                     :single-column="true"
                     size="large"
@@ -93,7 +93,7 @@ import {UserFollow} from '@vicons/carbon'
 import {Users} from '@vicons/tabler'
 import {UserApi} from '../api-define'
 import axios from 'axios'
-import SetPasswordForm from './forms/SetPasswordForm.vue'
+import SetPasswordForm from './sub/SetPasswordForm.vue'
 
 const notification = useNotification();
 
@@ -334,7 +334,6 @@ onMounted(() => {
   width: 80%;
   left: 50%;
   transform: translateX(-50%);
-  top: 20px;
 }
 
 .window {

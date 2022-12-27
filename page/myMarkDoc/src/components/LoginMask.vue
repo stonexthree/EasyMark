@@ -1,7 +1,8 @@
 <template>
   <n-config-provider :theme-overrides=themeOverride>
     <div id="mask-background" :class="isLogin ? 'mask-off':'mask-on'" :style="{zIndex:loginStatus.statusChanged?'10':'-10'}">
-      <n-card class="center" :bordered="false" id="login-card" title="登录">
+      <LoginBackground class="background"/>
+      <n-card :bordered="false" id="login-card" title="登录">
         <n-form ref="formRef" :model="model" :rules="rules">
           <n-form-item path="age" label="用户名">
             <n-input v-model:value="username"/>
@@ -39,10 +40,12 @@ export default {
 
 <script setup lang="ts">
 import {NCard, NForm, NFormItem, NInput, NRow, NCol, NButton, NConfigProvider} from 'naive-ui';
-import {ref, watch} from "vue";
+import {ref, watch,computed} from "vue";
 import axios from 'axios'
 import {UserApi} from '../api-define'
 import {loginStatus} from "../globalStatus";
+import {customComponentThemeProvider,ColorSet} from "../theme";
+import LoginBackground from "./sub/LoginBackground.vue";
 
 const themeOverride = {
   "Card": {
@@ -81,11 +84,15 @@ function clickLogin(): void {
       }
   )
 }
+
+const colorSet = computed<ColorSet>(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 </script>
 
 <style scoped>
 #mask-background {
-  background-color: #252a32;
+  background-color: v-bind(colorSet.deep);
   width: 100%;
   height: 100%;
   position: fixed;
@@ -102,17 +109,20 @@ function clickLogin(): void {
   animation-name: mask-off;
 }
 
-.center {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.background{
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
-
 #login-card {
+  position: absolute;
   width: 300px;
   height: 400px;
-  background-color: #2e3440;
+  background-color: v-bind(colorSet.halfDeep);
+  top: 50%;
+  right: 10%;
+  transform: translateY(-50%);
 }
 
 @keyframes mask-on {

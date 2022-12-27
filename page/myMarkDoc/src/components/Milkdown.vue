@@ -55,6 +55,7 @@ import {loginStatus} from '../globalStatus'
 import PictureUpload from './PictureUpload.vue'
 import {ImageAction} from '../model/models'
 import {blankTransport} from '../tooles'
+import {customComponentThemeProvider} from '../theme'
 
 /**
  * {
@@ -123,7 +124,8 @@ const editor = useEditor((root) =>
               //设置默认值
               //ctx.set(defaultValueCtx, '# Hello milkdown' );
             })
-            .use(nordDark)
+            //.use(nordDark)
+            .use(customComponentThemeProvider.value.editorTheme)
             .use(gfm)
             .use(listener)
             .use(clipboard)
@@ -344,9 +346,8 @@ loginStatus.registerAction(()=>{
 <style scoped>
 .components-root {
   position: absolute;
-  width: 90%;
+  width: 80%;
   left: 50%;
-  top: 20px;
   transform: translateX(-50%);
   height: calc(100% - 30px);
   overflow: hidden;

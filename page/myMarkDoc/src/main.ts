@@ -12,6 +12,7 @@ import AccountManagement from './components/AccountManagement.vue'
 import AccountProfile from './components/AccountProfile.vue'
 import {searchStatus,loginStatus} from './globalStatus'
 import axios from 'axios'
+import {DocApi} from './api-define'
 
 axios.interceptors.response.use(function (response) {
     if(response.data.code === 'A0200'){
@@ -19,6 +20,7 @@ axios.interceptors.response.use(function (response) {
     }
     return response;
 }, function (error) {
+    console.log(error);
     return Promise.reject(error);
 });
 
@@ -26,8 +28,8 @@ const webRoute = [
     {
         name: 'docList',
         path: "/doc-list", component: DocList, props: {
-            loading: false,
-            widthPercent: 80
+            widthPercent: 80,
+            docsApiConfig:DocApi.getAllDoc()
         }
     },
     {

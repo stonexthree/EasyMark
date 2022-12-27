@@ -1,12 +1,13 @@
 <template>
-  <div class="list-area" :style="{width:widthPercent+'%' }">
+  <div class="component-root" :style="rootStyle">
+    <n-empty description="无数据" size="large" v-show="docArray.length === 0&&!loading" style="position: absolute;left: 50%;top: 50%;transform: translate(-50%,-50%)" />
     <div class="list-area-mask" v-show="loading">
-      <n-icon class="loading-icon" size="32" color="rgba(200,200,200,1)">
+      <n-icon class="loading-icon" size="32" :color=loadingColor>
         <Loading3QuartersOutlined/>
       </n-icon>
     </div>
-    <n-list :show-divider=false hoverable clickable class="list">
-      <n-list-item class="list-row" v-for="doc in docListComputed" @click="onRowClick(doc.docId)">
+    <n-list :show-divider=true hoverable clickable class="list">
+      <n-list-item class="list-row" v-for="doc in docArray" @click="onRowClick(doc.docId)">
         <template #suffix>
           <p>{{ doc.updateTimestamp }}</p>
         </template>
@@ -32,34 +33,39 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {NList, NListItem, NConfigProvider, darkTheme, NEllipsis, NIcon} from 'naive-ui';
+import {NList, NListItem, NConfigProvider, darkTheme, NEllipsis, NIcon,NEmpty} from 'naive-ui';
 import {Loading3QuartersOutlined} from '@vicons/antd'
-import {onMounted, ref, computed, Ref} from 'vue'
+import {onMounted, ref, computed, Ref,watch} from 'vue'
 import {DocApi} from '../api-define'
 import axios from 'axios';
 import {loginStatus} from '../globalStatus'
 import {DocInfo} from '../model/models'
 import {useRouter} from 'vue-router'
+import {customComponentThemeProvider} from '../theme'
+import {AxiosRequestConfig} from 'axios'
 
 const props = defineProps({
-  docs: Array,
-  loading: Boolean,
+  docsApiConfig: Object,
+  //docs: Array,
+  //loading: Boolean,
   actionEnabled: Boolean,
   widthPercent: Number,
   showEditIcon: Boolean,
   resultEditable: Boolean
 })
-
+const loading:Ref<boolean> = ref(false);
 const docDemoList: DocInfo[] = DocInfo.mockArray(10);
 
-const allDoc: Ref<DocInfo[]> = ref([]);
+const docArray: Ref<DocInfo[]> = ref([]);
+/*
 const docListComputed = computed(() => {
-  if (props.docs !== undefined) {
+  /!*if (props.docs !== undefined) {
     return props.docs;
-  }
-  return allDoc.value;
+  }*!/
+  return docArray.value;
 })
-
+*/
+const a:string='a'
 
 const router = useRouter();
 
@@ -75,38 +81,58 @@ function onRowClick(docId: string): void {
 }
 
 function loadList(){
-  axios(DocApi.getAllDoc()).then(
+  loading.value=true;
+  docArray.value=[];
+  axios(<AxiosRequestConfig>props.docsApiConfig).then(
       (response) => {
         if (response.data.code === '00000') {
           for (const i in response.data.data) {
             const doc = response.data.data[i];
-            allDoc.value.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
+            docArray.value.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
           }
-          console.log(allDoc.value);
+          //console.log(docArray.value);
         }
-        if (response.data.code === 'A0200') {
+        /*if (response.data.code === 'A0200') {
           //loginStatus.loginFailed();
-        }
+        }*/
+        loading.value=false;
       }
-  ).catch()
+  ).catch(()=>loading.value=false)
 }
+
+watch(props,async (newProps, oldProps) => {
+  loadList();
+})
 
 onMounted(
     () => {
-      if (props.docs !== undefined) {
+/*      if (props.docs !== undefined) {
         return;
-      }
+      }*/
       loadList();
       loginStatus.registerAction(loadList)
     }
 )
 
+///////////////////////////
+//动态样式控制
+const rootStyle = computed(()=>{
+  return{
+  width:props.widthPercent + '%',
+  backgroundColor: customComponentThemeProvider.value.colorSet.halfDeep,
+  }
+})
+
+const loadingColor = computed<any>(()=>{
+  return customComponentThemeProvider.value.colorSet.extension1
+})
+
 </script>
 
 <style scoped>
-.list-area {
+.component-root {
   position: absolute;
-  top: 20px;
+  top: 0px;
   width: 100%;
   min-width: 120px;
   background-color: #2e3440;
@@ -116,7 +142,7 @@ onMounted(
   transform: translateX(-50%);
 }
 
-.list-area::-webkit-scrollbar {
+.component-root::-webkit-scrollbar {
   display: none;
 }
 
@@ -128,9 +154,10 @@ onMounted(
 
 .loading-icon {
   position: absolute;
+  height: 32px;
+  width: 32px;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   animation: rotation;
   animation-iteration-count: infinite;
   animation-duration: 2s;
@@ -138,10 +165,10 @@ onMounted(
 
 @keyframes rotation {
   0% {
-    transform: rotate(0deg);
+    transform: translate(-50%,-50%) rotate(0deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: translate(-50%,-50%) rotate(360deg);
   }
 }
 </style>
