@@ -157,7 +157,7 @@ const zIndex:Ref<any>=ref(2);
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 290px;
+  right: 230px;
 }
 
 #search-icon {

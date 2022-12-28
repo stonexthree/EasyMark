@@ -11,6 +11,10 @@
           <router-view :key="$route.fullPath"></router-view>
         </div>
         <div id="extend-message">
+          <svg :style="githubStyle" @click="goGithub">
+            <LogoGithub />
+          </svg>
+          <br/>
           Licence: MIT<br/>Author: Stonexthree
         </div>
       </n-dialog-provider>
@@ -19,12 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import {NConfigProvider} from 'naive-ui';
+import {NConfigProvider,NButton,NIcon} from 'naive-ui';
 import {loginStatus} from './globalStatus'
 import {customComponentThemeProvider,ColorSet} from './theme.js'
 import axios from "axios";
 import {UserApi} from "./api-define";
 import { onMounted,computed } from 'vue'
+import {LogoGithub} from '@vicons/carbon'
 import PictureUpload from './components/PictureUpload.vue'
 
 function loadProfile(){
@@ -45,6 +50,16 @@ onMounted(()=>{
 const colorSet = computed<ColorSet>(()=>{
   return customComponentThemeProvider.value.colorSet;
 })
+const githubStyle = computed(()=>{
+  return {
+    height:'24px',
+    width: '24px',
+  }
+})
+function goGithub(){
+  window.open("https://github.com/stonexthree/EasyMark","_blank");
+}
+
 </script>
 
 <script lang="ts">
@@ -118,6 +133,8 @@ export default {
 body {
   background-color: rgba(37, 41, 50, 1);
 }
-
+svg:hover{
+ cursor: pointer;
+}
 
 </style>

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: myMarkDoc
+    name: EasyMark
   servlet:
     multipart:
       max-file-size: 50MB
