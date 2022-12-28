@@ -32,7 +32,7 @@ const nordPolarNightColorSet:ColorSet={
     fontColor:'rgba(255,255,255,1)',
     fontColor2:'rgba(220,220,220,1)',
     fontColor3:'rgba(200,200,200,1)',
-    fontColor4:'rgba(180,180,180,1)',
+    fontColor4:'rgba(140,140,140,1)',
     //rgba(46,52,64,1)
     deep:'#2E3440',
     //rgba(59,66,82,1)
@@ -54,7 +54,7 @@ const nordPolarNightTheme:ThemeProvider = {
         "List": {
             "color": "rgba(255, 255, 255, 0)",
             "colorHover": "#4C566A",
-            "textColor": "rgba(200,200,200,1)"
+            "textColor": "rgba(220,220,220,1)"
         },
         'DataTable':{
             'thColor':'rgba(59,66,82,1)',//表头

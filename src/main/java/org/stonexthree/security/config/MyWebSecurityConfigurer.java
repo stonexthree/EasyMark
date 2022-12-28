@@ -1,5 +1,6 @@
 package org.stonexthree.security.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +25,10 @@ import org.stonexthree.web.utils.RestResponseFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
+@Slf4j
 public class MyWebSecurityConfigurer {
     private JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler;
     private JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler;
@@ -55,15 +54,6 @@ public class MyWebSecurityConfigurer {
     @Bean
     public InMemoryUserDetailsManager userDetailsService(MyUserDataPersistence userDataPersistence) {
         InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
-        UserDetails defaultAdmin = User
-                .withUsername("admin")
-                .password("{bcrypt}" + new BCryptPasswordEncoder().encode("1qaz2wsx"))
-                .roles("USER", "ADMIN")
-                .build();
-        //userDetailsManager.createUser(defaultAdmin);
-        UserExtendProxy defaultAdminProxy = new UserExtendProxy(defaultAdmin, "管理员");
-        userDetailsManager.createUser(defaultAdminProxy);
-        userDetailsHashMap.put(defaultAdminProxy.getUsername(), defaultAdminProxy);
         Map<String, UserDetails> loadedUserDetailsMap = userDataPersistence.loadUserMap();
         for (UserDetails userDetails : loadedUserDetailsMap.values()) {
             if (userDetailsHashMap.containsKey(userDetails.getUsername())) {
@@ -72,6 +62,18 @@ public class MyWebSecurityConfigurer {
             UserExtendProxy userProxy = userDetails instanceof UserExtendProxy ? (UserExtendProxy) userDetails : new UserExtendProxy(userDetails, "用户");
             userDetailsHashMap.put(userProxy.getUsername(), userProxy);
             userDetailsManager.createUser(userProxy);
+        }
+        if(!userDetailsHashMap.containsKey("admin")){
+            String password = UUID.randomUUID().toString();
+            UserDetails defaultAdmin = User
+                    .withUsername("admin")
+                    .password("{bcrypt}" + new BCryptPasswordEncoder().encode(password))
+                    .roles("USER", "ADMIN")
+                    .build();
+            UserExtendProxy defaultAdminProxy = new UserExtendProxy(defaultAdmin, "管理员");
+            userDetailsManager.createUser(defaultAdminProxy);
+            userDetailsHashMap.put(defaultAdminProxy.getUsername(), defaultAdminProxy);
+            log.info("用户 admin : "+ password);
         }
         return userDetailsManager;
     }
@@ -112,7 +114,8 @@ public class MyWebSecurityConfigurer {
                                     .setMessage("没有登录")
                                     .setCode(ErrorCodeUtil.CLIENT_AUTHENTICATION_ERROR)
                     );
-                    authException.printStackTrace();
+                    //authException.printStackTrace();
+                    //log.info("未登录请求：IP: "+request.getRemoteAddr());
                 })
                 .accessDeniedHandler((request, response, authException) -> {
                     this.strictModePath.stream().forEach((path)->{

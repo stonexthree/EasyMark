@@ -10,6 +10,9 @@
         <div id="main-div">
           <router-view :key="$route.fullPath"></router-view>
         </div>
+        <div id="extend-message">
+          Licence: MIT<br/>Author: Stonexthree
+        </div>
       </n-dialog-provider>
     </n-notification-provider>
   </n-config-provider>
@@ -18,10 +21,10 @@
 <script setup lang="ts">
 import {NConfigProvider} from 'naive-ui';
 import {loginStatus} from './globalStatus'
-import {customComponentThemeProvider} from './theme.js'
+import {customComponentThemeProvider,ColorSet} from './theme.js'
 import axios from "axios";
 import {UserApi} from "./api-define";
-import { onMounted } from 'vue'
+import { onMounted,computed } from 'vue'
 import PictureUpload from './components/PictureUpload.vue'
 
 function loadProfile(){
@@ -39,6 +42,9 @@ onMounted(()=>{
   loginStatus.registerAction(loadProfile,true);
 })
 
+const colorSet = computed<ColorSet>(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 </script>
 
 <script lang="ts">
@@ -90,6 +96,13 @@ export default {
   position: fixed;
 }
 
+#extend-message{
+  position: fixed;
+  bottom: 20px;
+  left: 48px;
+  color: rgba(100,100,100,1);
+}
+
 #main-div {
   position: absolute;
   top: 100px;
@@ -105,4 +118,6 @@ export default {
 body {
   background-color: rgba(37, 41, 50, 1);
 }
+
+
 </style>
