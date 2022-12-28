@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: EasyMark
+  servlet:
+    multipart:
+      max-file-size: 50MB
+server:
+  port: 8080
+  servlet:
+    session:
+      persistent: false
+app-config:
+  storage:
+    #存储路径，所有相关的文件都会存储在这个路径下面,其中图片会存在 pictures 目录下
+    base-dir: /home/admin/easymark/storage
+  security:
+    salt: 4831a5d7a60dc285
+
+#静态资源相关
+static-files:
+  security:
+    #严格模式；严格模式下的api，会在响应中配置合适当的 http状态码 ， 而不是默认返回 200
+    strict-mode:
+      #路径匹配
+      path-prefix: /files/picture,/files/others
