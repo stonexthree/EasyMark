@@ -38,7 +38,7 @@
           title="重置密码"
           size="huge"
           :bordered="false"
-          z-index=2
+          :z-index=zIndex
           :mask-closable="false"
       >
         <SetPasswordForm :account-name="setPasswordAccountName" @submitted="onFormSubmitted"/>
@@ -324,7 +324,9 @@ onMounted(() => {
     }
   }).catch((response) => console.log(response));
 })
-
+////////////////////
+//样式部分
+const zIndex:Ref<any>=ref(2);
 </script>
 
 <style scoped>

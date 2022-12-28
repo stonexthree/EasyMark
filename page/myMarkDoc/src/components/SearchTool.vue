@@ -1,5 +1,5 @@
 <template>
-<n-modal class="component-root" v-model:show="searchStatus.showSearchTool" z-index="2" >
+<n-modal class="component-root" v-model:show="searchStatus.showSearchTool" :z-index=zIndex >
   <n-card
       :bordered="false"
       size="huge"
@@ -88,6 +88,10 @@ function searchHandel(scope:SearchScope,kw:string):void{
   })
   searchStatus.value.showSearchTool = false;
 }
+
+/////////////////////
+//样式部分
+const zIndex:Ref<any>=ref(2);
 </script>
 
 <style scoped>

@@ -41,7 +41,7 @@ const nordPolarNightColorSet:ColorSet={
     halfLight:'#434C5E',
     //rgba(76,86,106,1)
     light:'#4C566A',
-    heightLight1:'#4C566A',
+    heightLight1:'#1C2434',
     heightLight2:'#4C566A',
     heightLight3:'#4C566A',
     heightLight4:'#4C566A',
@@ -61,6 +61,13 @@ const nordPolarNightTheme:ThemeProvider = {
             'tdColor':'rgba(67,76,94,0)',//数据行颜色
             'tdColorStriped':'rgba(67,76,94,0.1)',//数据行条纹色
             'borderColor': 'rgba(59,66,82,1)'
+        },
+        'Modal':{
+            'boxShadow': '0px 0px transparent'
+        },
+        'Button':{
+            'textColor': 'rgba(200,200,200,100%)',
+            'border': '1px solid rgba(200,200,200,50%)'
         }
     }
 };

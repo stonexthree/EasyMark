@@ -1,17 +1,17 @@
 export class DocInfo {
-    docId: String;
-    docName: String;
-    docAuthor: String;
-    updateTimestamp: String;
+    docId: string;
+    docName: string;
+    docAuthor: string;
+    updateTimestamp: string;
 
-    constructor(docId:string,docName: String, docAuthor: String, updateTimestamp: number) {
+    constructor(docId:string,docName: string, docAuthor: string, updateTimestamp: number) {
         this.docName = docName;
         this.docAuthor = docAuthor;
         this.updateTimestamp = new Date(updateTimestamp).toLocaleDateString();
         this.docId = docId;
     }
 
-    static factory(docId:string,docName: String, docAuthor: String, updateTimestamp: number):DocInfo {
+    static factory(docId:string,docName: string, docAuthor: string, updateTimestamp: number):DocInfo {
         return new DocInfo(docId,docName, docAuthor, updateTimestamp);
     }
 
@@ -19,8 +19,8 @@ export class DocInfo {
         const result: DocInfo[] = [];
         for (let i: number = 0; i < size; i++) {
             const docId : string = i.toString();
-            const docName: String = "文档" + i;
-            const docAuthor: String = "作者" + i;
+            const docName: string = "文档" + i;
+            const docAuthor: string = "作者" + i;
             const updateTimestamp: number = new Date().getTime();
             result.push(new DocInfo(docId,docName, docAuthor, updateTimestamp));
         }

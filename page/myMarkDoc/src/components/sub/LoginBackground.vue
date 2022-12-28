@@ -39,7 +39,7 @@ import {NIcon} from 'naive-ui'
   width: 800px;
   top: 50%;
   transform: translateY(-50%);
-  left: 20%;
+  left: calc(90% - 1100px);
 }
 
 .text {

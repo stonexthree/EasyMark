@@ -25,7 +25,6 @@
 </template>
 
 <script lang="ts">
-import {DocInfo} from "../model/models";
 
 export default {
   name: "DocList",
@@ -136,7 +135,7 @@ const loadingColor = computed<any>(()=>{
   width: 100%;
   min-width: 120px;
   background-color: #2e3440;
-  height: calc(100% - 30px);
+  height: calc(100%);
   overflow: scroll;
   left: 50%;
   transform: translateX(-50%);

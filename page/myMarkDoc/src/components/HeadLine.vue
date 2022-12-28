@@ -48,7 +48,7 @@
         title="重置密码"
         size="huge"
         :bordered="false"
-        z-index=2
+        :z-index=zIndex
         :mask-closable="false"
     >
       <SetPasswordForm @submitted="onFormSubmitted"/>
@@ -120,7 +120,7 @@ onMounted(()=>{
 const iconColor = computed<any>(()=>{
   return customComponentThemeProvider.value.colorSet.extension1;
 })
-
+const zIndex:Ref<any>=ref(2);
 </script>
 
 <style scoped>

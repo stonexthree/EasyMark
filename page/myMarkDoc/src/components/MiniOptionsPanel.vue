@@ -73,7 +73,7 @@ export default {
   border-style: solid;
   border-color: v-bind(colorSet.halfLight);
   border-width: 0px 0px 0px 4px;
-  font-size: 1.1em;
+  font-size: 1em;
 }
 .options-panel > div{
   width: 100%;

@@ -106,7 +106,7 @@ const colorSet = computed<ColorSet>(()=>{
 .component-root {
   position: absolute;
   width: 100%;
-  height: calc(100% - 30px);
+  height: calc(100% );
   left: 50%;
   transform: translateX(-50%);
 }

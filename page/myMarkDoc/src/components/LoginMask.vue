@@ -1,9 +1,9 @@
 <template>
   <n-config-provider :theme-overrides=themeOverride>
-    <div id="mask-background" :class="isLogin ? 'mask-off':'mask-on'" :style="{zIndex:loginStatus.statusChanged?'10':'-10'}">
+    <div id="mask-background" :class="isLogin ? 'mask-off':'mask-on'" :style="{zIndex:loginStatus.statusChanged?10:-10}">
       <LoginBackground class="background"/>
       <n-card :bordered="false" id="login-card" title="登录">
-        <n-form ref="formRef" :model="model" :rules="rules">
+        <n-form ref="formRef">
           <n-form-item path="age" label="用户名">
             <n-input v-model:value="username"/>
           </n-form-item>
@@ -118,7 +118,7 @@ const colorSet = computed<ColorSet>(()=>{
 #login-card {
   position: absolute;
   width: 300px;
-  height: 400px;
+  height: 320px;
   background-color: v-bind(colorSet.halfDeep);
   top: 50%;
   right: 10%;

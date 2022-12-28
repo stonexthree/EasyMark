@@ -1,7 +1,7 @@
 <template>
   <div class="components-root">
     <VueEditor id="milkdown-root" :editor="editor"/>
-    <div class="side-icon-bar" v-show=!readOnly>
+    <div class="side-icon-bar" v-show=!readOnly :style="{ backgroundColor: customComponentThemeProvider.colorSet.heightLight2}">
       <n-icon color="white" size="24" class="icon upload-icon" @click="uploadDoc">
         <CloudUploadOutlined/>
       </n-icon>
@@ -15,12 +15,13 @@
   </div>
 </template>
 <script lang="ts">
-import {defineComponent, defineProps} from "vue";
-import {VueEditor, useEditor} from "@milkdown/vue";
 
-export default defineComponent({
+export default {
+  name: 'Milkdown',
+}
+/*export default defineComponent({
   name: "Milkdown",
-});
+});*/
 
 </script>
 
@@ -103,7 +104,7 @@ const editorRef: Ref<Editor | null> = ref(null);
 /**
  * 创建编辑器
  */
-const editor = useEditor((root) =>
+const { editor } = useEditor((root) =>
         Editor.make()
             .config((ctx) => {
               ctx.set(rootCtx, root);
@@ -346,10 +347,10 @@ loginStatus.registerAction(()=>{
 <style scoped>
 .components-root {
   position: absolute;
-  width: 80%;
+  width: 90%;
   left: 50%;
   transform: translateX(-50%);
-  height: calc(100% - 30px);
+  height: calc(100% );
   overflow: hidden;
 }
 
@@ -388,6 +389,7 @@ loginStatus.registerAction(()=>{
   display: flex;
   flex-flow: column;
   padding-top: 56px;
+  height: 100%;
 }
 
 .side-icon-bar .icon {

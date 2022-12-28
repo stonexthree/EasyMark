@@ -5,7 +5,7 @@
         <img :src="url" @click="clickSketch(url)" />
       </div>
       <div class="image-item" id="add-icon" @click="clickUpload">
-        <n-icon size="100">
+        <n-icon size="100" :color="halfDeep">
           <Add/>
         </n-icon>
       </div>
@@ -47,6 +47,7 @@ import {ImageAction} from '../model/models'
 import axios from 'axios'
 import {PictureApi,UrlConstructor} from '../api-define'
 import {loginStatus} from '../globalStatus'
+import {customComponentThemeProvider,ColorSet} from '../theme'
 
 const pictureUrls: Ref<string[]> = ref([]);
 const detailUrl: Ref<string> = ref('');
@@ -97,6 +98,15 @@ loginStatus.registerAction(()=>{
   detailUrl.value='';
 },true);
 
+
+/////////////////////
+//样式
+const colorSet = computed<ColorSet>(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
+const halfDeep = computed<any>(()=>{
+  return customComponentThemeProvider.value.colorSet.halfDeep;
+})
 </script>
 
 <style scoped>
@@ -112,7 +122,7 @@ loginStatus.registerAction(()=>{
   height: 400px;
   width: 372px;
   overflow-y: scroll;
-  background-color: rgba(80, 80, 80, 100%);
+  background-color: v-bind(colorSet.light);
 }
 #sketch-div::-webkit-scrollbar{
   display: none;
@@ -125,7 +135,7 @@ loginStatus.registerAction(()=>{
   height: 100px;
   margin: 10px;
   border-width: 2px;
-  border-color: rgba(100, 100, 100, 100%);
+  border-color: v-bind(colorSet.halfDeep);
   border-radius: 10px;
   border-style: solid;
   overflow: hidden;
@@ -147,7 +157,7 @@ loginStatus.registerAction(()=>{
   top:0px;
   height: 400px;
   width: calc(100% - 372px);
-  background-color: rgba(80, 80, 80, 100%);
+  background-color: v-bind(colorSet.light);
   overflow: hidden;
 }
 
@@ -163,7 +173,7 @@ loginStatus.registerAction(()=>{
   height: 380px;
   left: 10px;
   top:10px;
-  background-color: rgba(100, 100, 100, 100%);
+  background-color: transparent;
 }
 #empty-image{
   position: absolute;
@@ -179,6 +189,7 @@ loginStatus.registerAction(()=>{
   width: calc(100% - 400px);
   height: 380px;
   overflow: hidden;
+  color: v-bind(colorSet.fontColor4)
 }
 #url-display{
   position: absolute;
