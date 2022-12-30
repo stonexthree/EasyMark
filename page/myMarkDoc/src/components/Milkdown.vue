@@ -1,11 +1,11 @@
 <template>
   <div class="components-root">
     <VueEditor id="milkdown-root" :editor="editor"/>
-    <div class="side-icon-bar" v-show=!readOnly :style="{ backgroundColor: customComponentThemeProvider.colorSet.heightLight2}">
-      <n-icon color="white" size="24" class="icon upload-icon" @click="uploadDoc">
+    <div class="side-icon-bar" v-show=!readOnly :style="{ backgroundColor: customComponentThemeProvider.colorSet.halfDeep}"><!---->
+      <n-icon :color="colorSet.fontColor2" size="24" class="icon upload-icon" @click="uploadDoc">
         <CloudUploadOutlined/>
       </n-icon>
-      <n-icon color="white" size="24" class="icon create-picture-url-icon" @click="showPictureSelectModal=true">
+      <n-icon :color="colorSet.fontColor2" size="24" class="icon create-picture-url-icon" @click="showPictureSelectModal=true">
         <PictureOutlined/>
       </n-icon>
     </div>
@@ -41,10 +41,10 @@ import {slash} from '@milkdown/plugin-slash';
 import {tooltip} from '@milkdown/plugin-tooltip';
 import {upload} from '@milkdown/plugin-upload';
 import {gfm} from '@milkdown/preset-gfm';
-import {nordDark} from '@milkdown/theme-nord';
-import {insert, replaceAll} from '@milkdown/utils';
+import {nordDark,nordLight} from '@milkdown/theme-nord';
+import {insert, replaceAll,forceUpdate,switchTheme} from '@milkdown/utils';
 import {VueEditor, useEditor} from "@milkdown/vue";
-import {defineComponent, defineProps, ref, Ref, onMounted, watch} from "vue";
+import {defineComponent, defineProps, ref, Ref, onMounted, watch,computed} from "vue";
 import {CloudUploadOutlined, PictureOutlined} from "@vicons/antd";
 import {NIcon, NEllipsis, NDialogProvider, useDialog, useNotification, NModal, NCard} from "naive-ui";
 import axios from 'axios';
@@ -342,6 +342,14 @@ const imageActions: ImageAction[] = [
 loginStatus.registerAction(()=>{
   editorRef.value?.action(replaceAll(''));
 },true)
+
+watch(customComponentThemeProvider,(newV,oldV)=>{
+  editorRef.value?.action(switchTheme(newV.editorTheme))
+})
+
+const colorSet = computed<any>(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 
 </script>
 <style scoped>

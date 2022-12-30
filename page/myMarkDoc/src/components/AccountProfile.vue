@@ -28,6 +28,7 @@ import {NInput,useNotification} from 'naive-ui'
 import {ref,Ref,onMounted,computed} from 'vue'
 import {UserApi} from '../api-define'
 import axios from 'axios'
+import {customComponentThemeProvider} from "../theme";
 
 const notification = useNotification();
 
@@ -69,15 +70,19 @@ function changeNickname(){
 onMounted(()=>{
 })
 
+///////////////////////
+//样式部分
+const colorSet = computed(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 </script>
 
 <style scoped>
 #component-root{
   position: absolute;
-  top: 20px;
   width: 80%;
   min-width: 120px;
-  background-color: #2e3440;
+  background-color: v-bind(colorSet.halfDeep);
   height: calc(100% - 30px);
   overflow: scroll;
   left: 50%;
@@ -88,7 +93,7 @@ onMounted(()=>{
   position: relative;
   left: 80px;
   height: 40px;
-  color: rgba(200,200,200,100%);
+  color: v-bind(colorSet.fontColor4);
 }
 .data-line .item-name{
   line-height: 100%;

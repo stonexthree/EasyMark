@@ -66,7 +66,7 @@ const webRoute = [
         path: "/result", component: DocList,
         props(){
             return {
-                docs:searchStatus.value.lastSearchResult,
+                docsApiConfig:searchStatus.value.searchApi,
                 loading: false,
                 widthPercent: 80
             }

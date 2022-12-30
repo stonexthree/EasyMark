@@ -403,8 +403,8 @@ const zIndex:Ref<any>=ref(2);
 #form-area {
   position: absolute;
   width: 600px;
-  background-color: #2e3440;
-  top: 20px;
-  padding: 30px;
+  background-color: transparent;
+  top: 0px;
+  padding: 0px;
 }
 </style>

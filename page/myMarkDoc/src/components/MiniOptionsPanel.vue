@@ -1,6 +1,6 @@
 <template>
 <div class="options-panel" >
-  <div v-for="option in options" :class="option.optionsKey===currentOption?'selected':''"
+  <div v-for="option in options" :class="router.currentRoute.value.path === option.routePath ?'selected':''"
        @click="clickOption(option.routePath,option.optionsKey)">{{option.routeName}}</div>
 </div>
 </template>
@@ -72,26 +72,30 @@ export default {
   left: 48px;
   border-style: solid;
   border-color: v-bind(colorSet.halfLight);
-  border-width: 0px 0px 0px 4px;
+  border-width: 0px 0px 0px 0px;
   font-size: 1em;
 }
 .options-panel > div{
   width: 100%;
   color: v-bind(colorSet.fontColor4);
   font-size: 1em;
-  padding-left: 32px;
-  margin: 3px;
+  padding: 3px 32px 3px 32px;
+  margin:  0px;
   user-select: none;
+  border-style: solid;
+  border-color: v-bind(colorSet.halfLight);
+  border-width: 0px 0px 0px 4px;
 }
 .options-panel > div:hover{
   cursor: pointer;
   padding-left: 48px;
-  text-shadow:0 0 5px v-bind(colorSet.fontColor2);
   color: v-bind(colorSet.fontColor2);
+  font-size: 1.2em;
 }
 
 .options-panel > .selected {
-  text-shadow:0 0 5px v-bind(colorSet.fontColor2);
   color: v-bind(colorSet.fontColor2);
+  border-color: v-bind(colorSet.extension1);
+  background-color: v-bind(colorSet.halfDeep);
 }
 </style>

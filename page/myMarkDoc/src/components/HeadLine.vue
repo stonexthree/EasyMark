@@ -1,18 +1,26 @@
 <template>
   <SearchTool />
   <div class="head-line-container">
-    <div class="logo">EasyMark</div>
+    <div class="logo">
+      <n-icon size="64" :color="colorSet.fontColor" class="img-logo" >
+        <DrawFilled />
+      </n-icon>
+      E.M.</div>
+    <n-icon class="theme-change" size="24" @click="ThemeStatus.next" :color="colorSet.extension1">
+      <Sun v-show="ThemeStatus.currentTheme==='NordSnowStorm'"/>
+      <Moon v-show="ThemeStatus.currentTheme==='NordPolarNight'"/>
+    </n-icon>
     <div class="search-div">
       <div class="circle-border" id="left-border"></div>
       <div class="circle-border" id="right-border"></div>
-      <n-icon id="search-icon" color="rgba(220,220,220,1)" size="24" class="search-div-icon">
+      <n-icon id="search-icon" :color="colorSet.fontColor2" size="24" class="search-div-icon">
         <Search/>
       </n-icon>
       <span class="search-text vertical-center">Search</span>
-      <n-icon id="key-command" color="rgba(220,220,220,1)" size="20" class="search-div-icon">
+      <n-icon id="key-command" :color="colorSet.fontColor2" size="20" class="search-div-icon">
         <Command/>
       </n-icon>
-      <n-icon id="key-k" color="rgba(220,220,220,1)" size="20" class="search-div-icon">
+      <n-icon id="key-k" :color="colorSet.fontColor2" size="20" class="search-div-icon">
         <LetterK/>
       </n-icon>
     </div>
@@ -66,7 +74,8 @@ export default {
 import {NIcon,NModal} from 'naive-ui'
 import {UserOutlined} from '@vicons/antd'
 import {Command, LetterK, Search} from '@vicons/tabler'
-import {Password, Logout, Document, List, DocumentAdd, StarReview,UserProfile} from '@vicons/carbon'
+import {DrawFilled} from '@vicons/material'
+import {Password, Logout, Document, List, DocumentAdd, StarReview,UserProfile,Sun,Moon} from '@vicons/carbon'
 import {onMounted,ref,Ref,computed} from 'vue'
 import {useRouter} from 'vue-router'
 import {loginStatus} from '../globalStatus'
@@ -74,7 +83,8 @@ import {UserApi} from "../api-define";
 import axios from 'axios'
 import SearchTool from './SearchTool.vue'
 import SetPasswordForm from './sub/SetPasswordForm.vue'
-import {customComponentThemeProvider} from '../theme'
+import {customComponentThemeProvider,ThemeName,ThemeStatus} from '../theme'
+
 
 const router = useRouter();
 
@@ -119,8 +129,13 @@ onMounted(()=>{
 //样式部分
 const iconColor = computed<any>(()=>{
   return customComponentThemeProvider.value.colorSet.extension1;
+});
+const colorSet = computed<any>(()=>{
+  return customComponentThemeProvider.value.colorSet;
 })
 const zIndex:Ref<any>=ref(2);
+
+//ThemeStatus.value.change('NordSnowStorm');
 </script>
 
 <style scoped>
@@ -136,24 +151,35 @@ const zIndex:Ref<any>=ref(2);
   background-color: transparent;
   z-index: 1;
 }
-
+.img-logo{
+  position: relative;
+  top:50%;
+  transform: translateY(-50%);
+}
 .logo {
   position: absolute;
   height: 100%;
-  width: 300px;
+  width: 400px;
   left: 48px;
-  color: #ffffff;
+  color: v-bind(colorSet.fontColor);
   font-size: 4em;
   user-select: none;
   line-height: 80px;
   font-style: italic;
-  text-shadow: 4px -4px 10px #b0a591;
+}
+
+.theme-change{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 420px;
+
 }
 
 .search-div {
   height: 32px;
   width: 150px;
-  background-color: #191C21FF;
+  background-color: v-bind(colorSet.extension2);
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -173,7 +199,7 @@ const zIndex:Ref<any>=ref(2);
   border-radius: 20%;
   position: absolute;
   top: 50%;
-  background-color: #32435e;
+  background-color: v-bind(colorSet.halfDeep);
   transform: translate(0%, -50%);
 }
 
@@ -184,7 +210,7 @@ const zIndex:Ref<any>=ref(2);
   border-radius: 20%;
   position: absolute;
   top: 50%;
-  background-color: #32435e;
+  background-color: v-bind(colorSet.halfDeep);
   transform: translate(0%, -50%);
 }
 
@@ -193,7 +219,7 @@ const zIndex:Ref<any>=ref(2);
   height: 32px;
   width: 32px;
   border-radius: 50%;
-  background-color: #191C21FF;
+  background-color: v-bind(colorSet.extension2);
   transform: translateX(-50%);
 }
 
@@ -209,7 +235,7 @@ const zIndex:Ref<any>=ref(2);
   font-size: 1.5em;
   position: absolute;
   left: 25px;
-  color: rgba(120, 120, 120, 1);
+  color: v-bind(colorSet.fontColor4);
   user-select: none;
 }
 

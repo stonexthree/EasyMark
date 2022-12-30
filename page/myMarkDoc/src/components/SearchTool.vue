@@ -74,7 +74,8 @@ document.onkeydown=(event)=>{
 }
 function searchHandel(scope:SearchScope,kw:string):void{
   router.push({name:'searchResult'});
-  axios.request(SearchApi.searchDoc(scope,kw)).then((response)=>{
+  searchStatus.value.searchApi = SearchApi.searchDoc(scope,kw);
+/*  axios.request(SearchApi.searchDoc(scope,kw)).then((response)=>{
     searchStatus.value.lastSearchResult = [];
     if (response.data.code === '00000') {
       for (const i in response.data.data) {
@@ -85,7 +86,7 @@ function searchHandel(scope:SearchScope,kw:string):void{
     if (response.data.code === 'A0200') {
       //loginStatus.loginFailed();
     }
-  })
+  })*/
   searchStatus.value.showSearchTool = false;
 }
 

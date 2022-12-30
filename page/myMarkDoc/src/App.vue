@@ -15,7 +15,7 @@
             <LogoGithub />
           </svg>
           <br/>
-          Licence: MIT<br/>Author: Stonexthree
+          0.2.1-beta | MIT Licence
         </div>
       </n-dialog-provider>
     </n-notification-provider>
@@ -92,15 +92,12 @@ export default {
   width: 100%;
   height: 100%;
   position: absolute;
+  background-color: v-bind(colorSet.deep);
 }
 
 #headline {
   position: fixed;
   top: 0px;
-}
-
-#app-content {
-  background-color: #2E3440;
 }
 
 #side-options {
@@ -115,7 +112,7 @@ export default {
   position: fixed;
   bottom: 20px;
   left: 48px;
-  color: rgba(100,100,100,1);
+  color: v-bind(colorSet.fontColor4);
 }
 
 #main-div {
@@ -131,7 +128,7 @@ export default {
 }
 
 body {
-  background-color: rgba(37, 41, 50, 1);
+  background-color: v-bind(colorSet.deep);
 }
 svg:hover{
  cursor: pointer;

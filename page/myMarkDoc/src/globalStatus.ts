@@ -1,5 +1,6 @@
 import {reactive, ref, Ref} from 'vue'
 import {DocInfo} from './model/models'
+import {AxiosRequestConfig} from 'axios'
 
 export const loginStatus = reactive(
     {
@@ -52,7 +53,8 @@ export const loginStatus = reactive(
     }
 )
 //export const showSearchTool:Ref<boolean> = ref(false);
-export const searchStatus: Ref<{ showSearchTool: boolean, lastSearchResult: DocInfo[] }> = ref({
+export const searchStatus: Ref<{ showSearchTool: boolean, lastSearchResult: DocInfo[],searchApi:AxiosRequestConfig<any> }> = ref({
     showSearchTool: false,
     lastSearchResult: [],
+    searchApi: {}
 })

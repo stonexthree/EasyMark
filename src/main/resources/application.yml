@@ -13,8 +13,8 @@ app-config:
   storage:
     base-dir: /Users/stonexthree/Documents/practise/temp/myMarkDoc
   security:
+    password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285
-
 #静态资源相关
 static-files:
   security:

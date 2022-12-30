@@ -42,6 +42,7 @@ import {DocInfo} from '../model/models'
 import {useRouter} from 'vue-router'
 import {customComponentThemeProvider} from '../theme'
 import {AxiosRequestConfig} from 'axios'
+import {searchStatus} from '../globalStatus'
 
 const props = defineProps({
   docsApiConfig: Object,
@@ -79,21 +80,31 @@ function onRowClick(docId: string): void {
   router.push('/doc/' + docId);
 }
 
+/*const finalApi = computed<AxiosRequestConfig>(()=>{
+  if(router.currentRoute.value.name === 'searchResult'){
+    return <AxiosRequestConfig>searchStatus.value.searchApi;
+  }
+  return <AxiosRequestConfig>props.docsApiConfig;
+})*/
+
 function loadList(){
   loading.value=true;
   docArray.value=[];
   axios(<AxiosRequestConfig>props.docsApiConfig).then(
       (response) => {
+        const result:DocInfo[] = [];
         if (response.data.code === '00000') {
           for (const i in response.data.data) {
             const doc = response.data.data[i];
-            docArray.value.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
+            result.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
           }
-          //console.log(docArray.value);
         }
-        /*if (response.data.code === 'A0200') {
-          //loginStatus.loginFailed();
-        }*/
+        docArray.value = result.sort((a:DocInfo,b:DocInfo):number=>{
+          if(a.updateTimestamp<b.updateTimestamp){
+            return 1;
+          }
+          return -1;
+        })
         loading.value=false;
       }
   ).catch(()=>loading.value=false)
@@ -102,6 +113,10 @@ function loadList(){
 watch(props,async (newProps, oldProps) => {
   loadList();
 })
+/*watch(searchStatus,async (newStatus,oldStatus)=>{
+  loadList();
+})*/
+
 
 onMounted(
     () => {
@@ -126,6 +141,9 @@ const loadingColor = computed<any>(()=>{
   return customComponentThemeProvider.value.colorSet.extension1
 })
 
+const colorSet = computed(()=>{
+  return customComponentThemeProvider.value.colorSet;
+})
 </script>
 
 <style scoped>
@@ -134,7 +152,7 @@ const loadingColor = computed<any>(()=>{
   top: 0px;
   width: 100%;
   min-width: 120px;
-  background-color: #2e3440;
+  background-color: v-bind(colorSet.halfDeep);
   height: calc(100%);
   overflow: scroll;
   left: 50%;

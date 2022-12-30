@@ -1,7 +1,15 @@
 <template>
-  <n-config-provider :theme-overrides=themeOverride>
     <div id="mask-background" :class="isLogin ? 'mask-off':'mask-on'" :style="{zIndex:loginStatus.statusChanged?10:-10}">
       <LoginBackground class="background"/>
+      <div class="logo-content">
+        <n-icon class="icon" :color="colorSet.fontColor" size="200">
+          <DrawFilled/>
+        </n-icon>
+        <div class="text">
+          EASY MARK<br/>
+          <div style="font-size: 30px"> 轻量级在线MarkDown编辑器</div>
+        </div>
+      </div>
       <n-card :bordered="false" id="login-card" title="登录">
         <n-form ref="formRef">
           <n-form-item path="age" label="用户名">
@@ -28,7 +36,6 @@
         </n-form>
       </n-card>
     </div>
-  </n-config-provider>
 </template>
 
 <script lang="ts">
@@ -39,22 +46,15 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {NCard, NForm, NFormItem, NInput, NRow, NCol, NButton, NConfigProvider} from 'naive-ui';
+import {NCard, NForm, NFormItem, NInput, NRow, NCol, NButton, NConfigProvider,NIcon} from 'naive-ui';
 import {ref, watch,computed} from "vue";
 import axios from 'axios'
 import {UserApi} from '../api-define'
 import {loginStatus} from "../globalStatus";
 import {customComponentThemeProvider,ColorSet} from "../theme";
 import LoginBackground from "./sub/LoginBackground.vue";
+import {DrawFilled} from '@vicons/material'
 
-const themeOverride = {
-  "Card": {
-    "titleTextColor": "rgba(200,200,200,1)"
-  },
-  "Form": {
-    "labelTextColor": "rgba(200,200,200,1)"
-  }
-}
 
 const props = defineProps({
   'isLogin': Boolean
@@ -85,7 +85,7 @@ function clickLogin(): void {
   )
 }
 
-const colorSet = computed<ColorSet>(()=>{
+const colorSet = computed<any>(()=>{
   return customComponentThemeProvider.value.colorSet;
 })
 </script>
@@ -121,8 +121,32 @@ const colorSet = computed<ColorSet>(()=>{
   height: 320px;
   background-color: v-bind(colorSet.halfDeep);
   top: 50%;
-  right: 10%;
-  transform: translateY(-50%);
+  right: 5%;
+  transform: translate(0%,-70%);
+}
+
+.icon {
+  position: absolute;
+  left: 0px;
+  top: 0px
+}
+
+.logo-content {
+  position: absolute;
+  background-color: transparent;
+  height: 200px;
+  width: 800px;
+  top: 50%;
+  transform: translate(0%,-100%);
+  left: 10%;
+}
+
+.text {
+  position: absolute;
+  left: 250px;
+  top: 0px;
+  font-size: 100px;
+  color: v-bind(colorSet.fontColor);
 }
 
 @keyframes mask-on {

@@ -4,13 +4,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.keygen.KeyGenerators;
+import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+
+@Component
 public class CryptoUtil {
-    private static String salt = "4831a5d7a60dc285";
-    private static String password = "D3UUB2z2D4pGnXdw";
+    @Value("${app-config.security.salt}")
+    private String salt;
+    @Value("${app-config.security.password}")
+    private String password;
 
-    public static TextEncryptor getTextEncryptor(){
-        return Encryptors.text(password,salt);
+    public TextEncryptor getTextEncryptor(){
+        return Encryptors.text(this.password,this.salt);
     }
 
 }

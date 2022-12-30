@@ -18,10 +18,10 @@ public class DocServiceImpl implements DocService{
     private DocHolder docHolder;
     private TextEncryptor textEncryptor;
 
-    public DocServiceImpl(DocDataPersistence docDataPersistence) {
+    public DocServiceImpl(DocDataPersistence docDataPersistence ,CryptoUtil cryptoUtil) {
         this.docDataPersistence = docDataPersistence;
         this.docHolder = docDataPersistence.loadHolder();
-        textEncryptor = CryptoUtil.getTextEncryptor();
+        textEncryptor = cryptoUtil.getTextEncryptor();
     }
 
     @Override
