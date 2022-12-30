@@ -1,4 +1,5 @@
 <template>
+  <div id="lowest-background"></div>
   <n-config-provider :theme="customComponentThemeProvider.naiveUITheme.perSet" :theme-overrides="customComponentThemeProvider.naiveUITheme.override">
     <n-notification-provider>
       <n-dialog-provider>
@@ -126,12 +127,18 @@ export default {
   overflow-y: scroll;
   overflow-x: hidden;
 }
-
-body {
-  background-color: v-bind(colorSet.deep);
+#main-div::-webkit-scrollbar{
+  display: none;
 }
+
 svg:hover{
  cursor: pointer;
 }
 
+#lowest-background{
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: v-bind(colorSet.deep);
+}
 </style>

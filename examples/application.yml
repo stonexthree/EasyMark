@@ -11,11 +11,10 @@ server:
       persistent: false
 app-config:
   storage:
-    #存储路径，所有相关的文件都会存储在这个路径下面,其中图片会存在 pictures 目录下
-    base-dir: /home/admin/easymark/storage
+    base-dir: /home/easymark/storage
   security:
+    password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285
-
 #静态资源相关
 static-files:
   security:

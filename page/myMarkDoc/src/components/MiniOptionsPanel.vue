@@ -69,11 +69,14 @@ export default {
   overflow: scroll;
   position: absolute;
   top: 100px;
-  left: 48px;
+  left: 60px;
   border-style: solid;
   border-color: v-bind(colorSet.halfLight);
   border-width: 0px 0px 0px 0px;
   font-size: 1em;
+}
+.options-panel::-webkit-scrollbar{
+  display: none;
 }
 .options-panel > div{
   width: 100%;

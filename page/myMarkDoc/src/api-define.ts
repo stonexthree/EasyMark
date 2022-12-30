@@ -1,5 +1,5 @@
 export {UserApi, DocApi, TagApi, SearchApi,PictureApi,UrlConstructor}
-const baseURL = 'http://127.0.0.1:8081/api/'
+const baseURL = '/api/'
 const UserApi = {
     'login': (username: string, password: string) => {
         return {
