@@ -13,12 +13,10 @@
       <n-card :bordered="false" id="login-card" title="登录">
         <n-form ref="formRef">
           <n-form-item path="age" label="用户名">
-            <n-input v-model:value="username"/>
+            <n-input v-model:value="username" @keydown.enter="keyDown"/>
           </n-form-item>
           <n-form-item path="password" label="密码">
-            <n-input v-model:value="password"
-                     type="password"
-            />
+            <n-input v-model:value="password" type="password" @keydown.enter="keyDown"/>
           </n-form-item>
           <n-row :gutter="[0, 24]">
             <n-col :span="24">
@@ -46,7 +44,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import {NCard, NForm, NFormItem, NInput, NRow, NCol, NButton, NConfigProvider,NIcon} from 'naive-ui';
+import {NCard, NForm, NFormItem, NInput, NRow, NCol, NButton, NConfigProvider,NIcon,useNotification} from 'naive-ui';
 import {ref, watch,computed} from "vue";
 import axios from 'axios'
 import {UserApi} from '../api-define'
@@ -55,6 +53,7 @@ import {customComponentThemeProvider,ColorSet} from "../theme";
 import LoginBackground from "./sub/LoginBackground.vue";
 import {DrawFilled} from '@vicons/material'
 
+const notification = useNotification();
 
 const props = defineProps({
   'isLogin': Boolean
@@ -67,6 +66,8 @@ const emit = defineEmits([
 const username = ref('')
 const password = ref('')
 
+
+
 function clickLogin(): void {
   const usernameTemp = username.value;
   const passwordTemp = password.value;
@@ -74,15 +75,28 @@ function clickLogin(): void {
   password.value = '';
   axios(UserApi.login(usernameTemp, passwordTemp)).then(
       function (response) {
-        console.log(response.data)
+        //console.log(response.data)
         //const data = JSON.parse(response.data);
         if (response.data.code === '00000') {
           emit('loginSuccess', username.value)
-        } else {
-          console.log('failed')
+          return;
         }
+        notification.create({
+          content:'账号密码错误',
+          duration:2500
+        })
       }
-  )
+  ).catch(response => console.log(response))
+}
+function keyDown():void {
+  if(username.value===''||password.value===''){
+    notification.create({
+      content:'请输入账号和密码',
+      duration:2000
+    })
+    return;
+  }
+  clickLogin();
 }
 
 const colorSet = computed<any>(()=>{
@@ -135,7 +149,7 @@ const colorSet = computed<any>(()=>{
   position: absolute;
   background-color: transparent;
   height: 200px;
-  width: 800px;
+  width: 850px;
   top: 50%;
   transform: translate(0%,-100%);
   left: 10%;

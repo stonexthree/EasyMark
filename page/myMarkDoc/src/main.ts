@@ -14,6 +14,16 @@ import {searchStatus,loginStatus} from './globalStatus'
 import axios from 'axios'
 import {DocApi} from './api-define'
 
+//控制缩放
+function bodyScale() {
+    const deviceWidth = document.documentElement.clientWidth;
+    const scale =  (1440 *0.8)/deviceWidth;
+    (<any>document.body.style).zoom = scale;
+}
+window.onload = window.onresize = function () {
+    bodyScale();
+};
+
 axios.interceptors.response.use(function (response) {
     if(response.data.code === 'A0200'){
         loginStatus.loginFailed();

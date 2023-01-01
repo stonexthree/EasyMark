@@ -128,6 +128,9 @@ const colorSet = computed<ColorSet>(()=>{
   height: 100%;
   overflow: scroll;
 }
+.member-area::-webkit-scrollbar{
+  display: none;
+}
 
 .user-name {
   height: 40px;

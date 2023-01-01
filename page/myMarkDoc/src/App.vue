@@ -81,7 +81,7 @@ export default {
   name: "App",
 };
 </script>
-<style>
+<style scoped>
 #login-mask-top-div {
   width: 100%;
   height: 100%;

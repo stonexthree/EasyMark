@@ -53,12 +53,12 @@ const pictureUrls: Ref<string[]> = ref([]);
 const detailUrl: Ref<string> = ref('');
 const showNothing: Ref<boolean> = ref(true);
 
-function mockPictures(initSize: number): void {
+/*function mockPictures(initSize: number): void {
   const url = 'http://127.0.0.1:8081/picture/18f2f437-21d0-4a94-97a9-07dd2a9798e7.jpg'
   for (let i: number = 0; i < initSize; i++) {
     pictureUrls.value.push(url);
   }
-}
+}*/
 //mockPictures(20);
 
 function clickSketch(url:string){

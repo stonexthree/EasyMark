@@ -84,9 +84,13 @@ const colorSet = computed(()=>{
   min-width: 120px;
   background-color: v-bind(colorSet.halfDeep);
   height: calc(100% - 30px);
-  overflow: scroll;
+  overflow-x:hidden;
+  overflow-y: scroll;
   left: 50%;
   transform: translateX(-50%);
+}
+#component-root::-webkit-scrollbar{
+  display: none;
 }
 .data-line{
   margin:40px 0px 20px 0px;

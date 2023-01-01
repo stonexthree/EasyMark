@@ -92,7 +92,7 @@ const nordPolarNightEditorTheme = getTheme((manager:ThemeManager)=>{
             case 'shadow':
                 return `rgba(59, 66, 82, ${opacity})`;
             case 'line':
-                return `rgba(200,200,200, ${opacity})`;
+                return `rgba(100,100,100, ${opacity})`;
             case 'surface':
                 return `rgba(59, 66, 82, 1)`;
             case 'background':
@@ -163,7 +163,7 @@ const nordSnowStormEditorTheme = getTheme((manager:ThemeManager)=>{
             case 'shadow':
                 return `rgba(229,233,240, ${opacity})`;
             case 'line':
-                return `rgba(80,80,80, ${opacity})`;
+                return `rgba(210,210,210, ${opacity})`;
             case 'surface':
                 return `rgba(229, 233, 240, 1)`;
             case 'background':
