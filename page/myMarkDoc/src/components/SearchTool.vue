@@ -44,7 +44,6 @@ import {DocInfo, SearchScope} from "../model/models";
 import {useRouter} from 'vue-router';
 
 const router = useRouter();
-//const show:Ref<Boolean> = ref(true);
 const keyword: Ref<string> = ref('');
 const tags: Ref<string[]> = ref([])
 const docNameSearchShow = computed<boolean>(() => {
@@ -69,7 +68,6 @@ function valueInput(event: KeyboardEvent) {
 }
 
 document.onkeydown = (event) => {
-  //console.log(event.metaKey&&event.key==='k');
   if ((event.metaKey && event.key === 'k') || (event.ctrlKey && event.key === 'k')) {
     searchStatus.value.showSearchTool = true;
   }
@@ -78,18 +76,6 @@ document.onkeydown = (event) => {
 function searchHandel(scope: SearchScope, kw: string): void {
   router.push({name: 'searchResult'});
   searchStatus.value.searchApi = SearchApi.searchDoc(scope, kw);
-  /*  axios.request(SearchApi.searchDoc(scope,kw)).then((response)=>{
-      searchStatus.value.lastSearchResult = [];
-      if (response.data.code === '00000') {
-        for (const i in response.data.data) {
-          const doc = response.data.data[i];
-          searchStatus.value.lastSearchResult.push(new DocInfo(doc.docId, doc.docName, doc.authorNickname, doc.updateTimestamp));
-        }
-      }
-      if (response.data.code === 'A0200') {
-        //loginStatus.loginFailed();
-      }
-    })*/
   searchStatus.value.showSearchTool = false;
 }
 
