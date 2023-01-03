@@ -9,10 +9,10 @@ import org.stonexthree.security.config.MyWebSecurityConfigurer;
 @SpringBootApplication
 @Import(MyWebSecurityConfigurer.class)
 @EnableWebSecurity
-public class MyMarkDocApplication {
+public class EasyMarkApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MyMarkDocApplication.class, args);
+        SpringApplication.run(EasyMarkApplication.class, args);
     }
 
 }
