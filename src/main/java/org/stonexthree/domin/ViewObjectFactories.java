@@ -3,7 +3,6 @@ package org.stonexthree.domin;
 import org.stonexthree.domin.model.DocDTO;
 import org.stonexthree.domin.model.DocVO;
 
-import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +18,7 @@ public class ViewObjectFactories {
     public static DocVO toVO(DocDTO docDTO, String nickname) {
         return new DocVO(docDTO.getDocId(), docDTO.getDocName(), docDTO.getDocLocation(), docDTO.getDocAuthor(),
                 nickname, docDTO.getUpdateTimestamp());
+
     }
 
     /**

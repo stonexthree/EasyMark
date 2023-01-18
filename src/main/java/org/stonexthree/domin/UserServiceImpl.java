@@ -82,6 +82,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean userExist(String username) {
+        return userMap.containsKey(username);
+    }
+
+    @Override
     public UserVO getMe() {
         UserExtendProxy user = userMap.get(SecurityContextHolder.getContext().getAuthentication().getName());
         return new UserVO(user.getUsername(),user.getNickname(),user.getCreateTimestamp());

@@ -12,6 +12,7 @@ public interface UserService {
     boolean createUser(String userName,String password) throws IOException;
     void deleteUser(String userName) throws IOException;
     List<UserVO> getAllUser();
+    boolean userExist(String username);
     UserVO getMe();
     boolean grantAdmin(String name) throws IOException;
     boolean removeAdmin(String userName) throws IOException;
