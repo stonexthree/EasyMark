@@ -1,8 +1,9 @@
 package org.stonexthree.domin;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.stonexthree.domin.model.DocDTO;
-import org.stonexthree.persistence.LabelDataPersistence;
+import org.stonexthree.persistence.ObjectPersistenceHandler;
+import org.stonexthree.persistence.PersistenceManager;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -22,12 +23,18 @@ public class LabelServiceImpl implements Serializable, LabelService {
      */
     private Map<String,Set<String>> labelDocMap;
     private DocService docService;
-    private LabelDataPersistence persistence;
+    //private LabelDataPersistence persistence;
+    private ObjectPersistenceHandler<Map<String,Set<String>>> objectPersistenceHandler;
 
-    public LabelServiceImpl(DocService docService, LabelDataPersistence persistence) throws IOException {
+    public LabelServiceImpl(@Value("${app-config.storage.persistence.file.label}") String fileName,
+                            DocService docService,
+                            PersistenceManager persistenceManager) throws IOException {
         this.docService = docService;
-        this.persistence = persistence;
-        this.labelDocMap = persistence.loadLabelMap();
+        //this.persistence = persistence;
+        fileName = fileName==null?"label.data":fileName;
+        //this.labelDocMap = persistence.loadLabelMap();
+        this.objectPersistenceHandler = persistenceManager.getHandler(fileName,HashMap::new);
+        this.labelDocMap = objectPersistenceHandler.readObject();
     }
 
     @Override
@@ -38,7 +45,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
         labelDocMap.put(newName,labelDocMap.get(oldName));
         labelDocMap.remove(oldName);
         try{
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             labelDocMap.put(oldName,labelDocMap.get(newName));
             labelDocMap.remove(newName);
@@ -67,7 +75,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
             }
         });
         try {
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             changedKeyList.stream().forEach(changedKey -> labelDocMap.get(changedKey).remove(docId));
             addedKeyList.stream().forEach(addedKey -> labelDocMap.remove(addedKey));
@@ -87,7 +96,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
         }
         labelDocMap.get(labelName).remove(docId);
         try {
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             labelDocMap.get(labelName).add(docId);
             throw e;
@@ -122,7 +132,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
         }
 
         try{
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             addedKeySet.stream().forEach(key->labelDocMap.get(key).remove(docId));
             removedKeySet.stream().forEach(key->labelDocMap.get(key).add(docId));
@@ -145,7 +156,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
             }
         }
         try{
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             removedKeySet.stream().forEach(key -> labelDocMap.get(key).add(docId));
             throw e;
@@ -161,7 +173,8 @@ public class LabelServiceImpl implements Serializable, LabelService {
         }
         labelDocMap.remove(labelName);
         try {
-            persistence.savLabelMap(labelDocMap);
+            //persistence.savLabelMap(labelDocMap);
+            objectPersistenceHandler.writeObject(labelDocMap);
         }catch (IOException e){
             labelDocMap.put(labelName,targetSet);
             throw e;

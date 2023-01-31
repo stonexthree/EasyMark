@@ -12,6 +12,14 @@ server:
 app-config:
   storage:
     base-dir: /Users/stonexthree/Documents/practise/temp/myMarkDoc
+    persistence:
+      file:
+        discussion: discussions.data
+        label: label.data
+        user: users.data
+        doc:
+          holder: doc.data
+          dir: docs
   security:
     password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285

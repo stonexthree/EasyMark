@@ -1,11 +1,13 @@
 package org.stonexthree.domin;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.stonexthree.domin.model.DiscussionDTO;
 import org.stonexthree.domin.model.DiscussionTopicVO;
 import org.stonexthree.domin.model.DiscussionVO;
-import org.stonexthree.persistence.DiscussionsPersistence;
+import org.stonexthree.persistence.ObjectPersistenceHandler;
+import org.stonexthree.persistence.PersistenceManager;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -16,16 +18,23 @@ import java.util.*;
  */
 @Component
 public class DiscussionServiceImpl implements DiscussionService {
-    private DiscussionsPersistence discussionsPersistence;
+    //private DiscussionsPersistence discussionsPersistence;
+    private ObjectPersistenceHandler<List<DiscussionTopic>> discussionsPersistenceHandler;
     private List<DiscussionTopic> topicList;
     private DocService docService;
     private UserService userService;
 
-    public DiscussionServiceImpl(DiscussionsPersistence discussionsPersistence, DocService docService, UserService userService) throws IOException {
+    public DiscussionServiceImpl(@Value("${app-config.storage.persistence.file.discussion}") String fileName,
+                                 PersistenceManager persistenceManager,
+                                 DocService docService,
+                                 UserService userService) throws IOException {
         this.userService = userService;
         this.docService = docService;
-        this.discussionsPersistence = discussionsPersistence;
-        this.topicList = discussionsPersistence.loadDiscussions();
+        //this.discussionsPersistence = discussionsPersistence;
+        fileName = fileName == null ?"discussions.data" :fileName;
+        this.discussionsPersistenceHandler = persistenceManager.getHandler(fileName,ArrayList::new);
+        //this.topicList = discussionsPersistence.loadDiscussions();
+        this.topicList = discussionsPersistenceHandler.readObject();
     }
 
 
@@ -35,7 +44,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         String id = UUID.randomUUID().toString();
         DiscussionTopic topic = new DiscussionTopic(docId, id, detail, author);
         topicList.add(topic);
-        discussionsPersistence.saveDiscussions(topicList);
+        //discussionsPersistence.saveDiscussions(topicList);
+        discussionsPersistenceHandler.writeObject(topicList);
     }
 
     @Override
@@ -58,7 +68,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         Assert.isTrue(closedType.compareTo(DiscussionTopic.ClosedTypeEnum.NONE)!=0,"无法关闭其他用户创建的主题");
         targetTopic.get().setClosed(true);
         targetTopic.get().setClosedType(closedType);
-        discussionsPersistence.saveDiscussions(topicList);
+        //discussionsPersistence.saveDiscussions(topicList);
+        discussionsPersistenceHandler.writeObject(topicList);
     }
 
     @Override
@@ -73,7 +84,8 @@ public class DiscussionServiceImpl implements DiscussionService {
         Discussion discussion = Discussion.buildDiscussion(targetTopic.get(),discussionDTO);
         targetTopic.get().addDiscussions(discussion);
         targetTopic.get().setLastReplyTimeStamp(Instant.now().toEpochMilli());
-        discussionsPersistence.saveDiscussions(topicList);
+        //discussionsPersistence.saveDiscussions(topicList);
+        discussionsPersistenceHandler.writeObject(topicList);
     }
 
     @Override

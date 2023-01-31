@@ -9,8 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Component;
 import org.stonexthree.domin.model.UserVO;
-import org.stonexthree.persistence.MyUserDataPersistence;
 import org.stonexthree.security.config.MyWebSecurityConfigurer;
+import org.stonexthree.persistence.ObjectPersistenceHandler;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,15 +20,16 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
     private Map<String, UserExtendProxy> userMap;
     private final InMemoryUserDetailsManager userDetailsManager;
-    private final MyUserDataPersistence userDataPersistence;
+    //private final MyUserDataPersistence userDataPersistence;
+    private ObjectPersistenceHandler<Map<String, UserExtendProxy>> objectPersistenceHandler;
     BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     public UserServiceImpl(InMemoryUserDetailsManager userDetailsManager,
-                           MyUserDataPersistence userDataPersistence,
-                           MyWebSecurityConfigurer configurer) {
+                           MyWebSecurityConfigurer configurer) throws IOException {
         this.userMap = configurer.getUserDetailsHashMap();
         this.userDetailsManager = userDetailsManager;
-        this.userDataPersistence = userDataPersistence;
+        //this.userDataPersistence = userDataPersistence;
+        this.objectPersistenceHandler = configurer.getUserPersistenceHandler();
     }
 
     @Override
@@ -44,7 +45,8 @@ public class UserServiceImpl implements UserService {
         UserExtendProxy userProxy = new UserExtendProxy(user);
         userMap.put(userName, userProxy);
         try {
-            userDataPersistence.saveUserMap(userMap);
+            //userDataPersistence.saveUserMap(userMap);
+            objectPersistenceHandler.writeObject(userMap);
             userDetailsManager.createUser(user);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -63,7 +65,8 @@ public class UserServiceImpl implements UserService {
         target = userMap.get(userName);
         userMap.remove(userName);
         try {
-            userDataPersistence.saveUserMap(userMap);
+            //userDataPersistence.saveUserMap(userMap);
+            objectPersistenceHandler.writeObject(userMap);
             userDetailsManager.deleteUser(userName);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -76,7 +79,7 @@ public class UserServiceImpl implements UserService {
     public List<UserVO> getAllUser() {
         List<UserVO> result = new ArrayList<>();
         for (Map.Entry<String, UserExtendProxy> entry : this.userMap.entrySet()) {
-            result.add(new UserVO(entry.getKey(), entry.getValue().getNickname(),entry.getValue().getCreateTimestamp()));
+            result.add(new UserVO(entry.getKey(), entry.getValue().getNickname(), entry.getValue().getCreateTimestamp()));
         }
         return result;
     }
@@ -89,7 +92,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserVO getMe() {
         UserExtendProxy user = userMap.get(SecurityContextHolder.getContext().getAuthentication().getName());
-        return new UserVO(user.getUsername(),user.getNickname(),user.getCreateTimestamp());
+        return new UserVO(user.getUsername(), user.getNickname(), user.getCreateTimestamp());
     }
 
     @Override
@@ -138,7 +141,8 @@ public class UserServiceImpl implements UserService {
         }
         userMap.put(newUser.getUsername(), newUser);
         try {
-            userDataPersistence.saveUserMap(userMap);
+            //userDataPersistence.saveUserMap(userMap);
+            objectPersistenceHandler.writeObject(userMap);
             userDetailsManager.updateUser(newUser);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -182,8 +186,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean hasRoleAdmin() {
         Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        for(GrantedAuthority authority: authorities){
-            if (authority.getAuthority().equals("ROLE_ADMIN")){
+        for (GrantedAuthority authority : authorities) {
+            if (authority.getAuthority().equals("ROLE_ADMIN")) {
                 return true;
             }
         }

@@ -15,7 +15,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.stonexthree.domin.UserExtendProxy;
-import org.stonexthree.persistence.MyUserDataPersistence;
+//import org.stonexthree.persistence.MyUserDataPersistence;
+import org.stonexthree.persistence.ObjectPersistenceHandler;
+import org.stonexthree.persistence.PersistenceManager;
 import org.stonexthree.security.JsonAuthenticationFailureHandler;
 import org.stonexthree.security.JsonAuthenticationSuccessHandler;
 import org.stonexthree.security.JsonLogoutSuccessHandler;
@@ -25,6 +27,7 @@ import org.stonexthree.web.utils.RestResponseFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 
 @Configuration
@@ -33,7 +36,8 @@ public class MyWebSecurityConfigurer {
     private JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler;
     private JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler;
     private JsonLogoutSuccessHandler jsonLogoutSuccessHandler;
-    private HashMap<String, UserExtendProxy> userDetailsHashMap = new HashMap<>();
+    private HashMap<String, UserExtendProxy> userDetailsHashMap;
+    private ObjectPersistenceHandler<Map<String, UserExtendProxy>> objectPersistenceHandler;
 
     /**
      * 启用严格模式的路径，这些api会设置对应的http状态码
@@ -41,20 +45,38 @@ public class MyWebSecurityConfigurer {
     @Value("${static-files.security.strict-mode.path-prefix}")
     private List<String> strictModePath;
 
-    public MyWebSecurityConfigurer(JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler, JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler, JsonLogoutSuccessHandler jsonLogoutSuccessHandler) {
+    public MyWebSecurityConfigurer(@Value("${app-config.storage.persistence.file.user}") String fileName,
+                                   PersistenceManager persistenceManager,
+                                   JsonAuthenticationFailureHandler jsonAuthenticationFailureHandler,
+                                   JsonAuthenticationSuccessHandler jsonAuthenticationSuccessHandler,
+                                   JsonLogoutSuccessHandler jsonLogoutSuccessHandler) throws IOException {
         this.jsonAuthenticationFailureHandler = jsonAuthenticationFailureHandler;
         this.jsonAuthenticationSuccessHandler = jsonAuthenticationSuccessHandler;
         this.jsonLogoutSuccessHandler = jsonLogoutSuccessHandler;
+        this.userDetailsHashMap = new HashMap<>();
+        fileName = fileName == null ? "users.data" : fileName;
+        this.objectPersistenceHandler = persistenceManager.getHandler(fileName, HashMap::new);
     }
 
     public HashMap<String, UserExtendProxy> getUserDetailsHashMap() {
         return userDetailsHashMap;
     }
 
+    public ObjectPersistenceHandler<Map<String, UserExtendProxy>> getUserPersistenceHandler(){
+        return objectPersistenceHandler;
+    }
+
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(MyUserDataPersistence userDataPersistence) {
+    public InMemoryUserDetailsManager userDetailsService() {
         InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
-        Map<String, UserDetails> loadedUserDetailsMap = userDataPersistence.loadUserMap();
+        //Map<String, UserDetails> loadedUserDetailsMap = userDataPersistence.loadUserMap();
+        Map<String, UserExtendProxy> loadedUserDetailsMap;
+        try {
+            loadedUserDetailsMap = objectPersistenceHandler.readObject();
+        } catch (IOException e) {
+            loadedUserDetailsMap = new HashMap<>();
+            throw new RuntimeException(e);
+        }
         for (UserDetails userDetails : loadedUserDetailsMap.values()) {
             if (userDetailsHashMap.containsKey(userDetails.getUsername())) {
                 continue;
@@ -63,7 +85,7 @@ public class MyWebSecurityConfigurer {
             userDetailsHashMap.put(userProxy.getUsername(), userProxy);
             userDetailsManager.createUser(userProxy);
         }
-        if(!userDetailsHashMap.containsKey("admin")){
+        if (!userDetailsHashMap.containsKey("admin")) {
             String password = UUID.randomUUID().toString();
             UserDetails defaultAdmin = User
                     .withUsername("admin")
@@ -73,7 +95,7 @@ public class MyWebSecurityConfigurer {
             UserExtendProxy defaultAdminProxy = new UserExtendProxy(defaultAdmin, "管理员");
             userDetailsManager.createUser(defaultAdminProxy);
             userDetailsHashMap.put(defaultAdminProxy.getUsername(), defaultAdminProxy);
-            log.info("用户 admin : "+ password);
+            log.info("用户 admin : " + password);
         }
         return userDetailsManager;
     }
@@ -104,8 +126,8 @@ public class MyWebSecurityConfigurer {
                 //异常处理
                 .exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
-                    this.strictModePath.stream().forEach((path)->{
-                        if(request.getRequestURI().startsWith(path)){
+                    this.strictModePath.stream().forEach((path) -> {
+                        if (request.getRequestURI().startsWith(path)) {
                             response.setStatus(401);
                         }
                     });
@@ -118,8 +140,8 @@ public class MyWebSecurityConfigurer {
                     //log.info("未登录请求：IP: "+request.getRemoteAddr());
                 })
                 .accessDeniedHandler((request, response, authException) -> {
-                    this.strictModePath.stream().forEach((path)->{
-                        if(request.getRequestURI().startsWith(path)){
+                    this.strictModePath.stream().forEach((path) -> {
+                        if (request.getRequestURI().startsWith(path)) {
                             response.setStatus(401);
                         }
                     });

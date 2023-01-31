@@ -18,7 +18,7 @@ public class DocServiceImpl implements DocService{
     private DocHolder docHolder;
     private TextEncryptor textEncryptor;
 
-    public DocServiceImpl(DocDataPersistence docDataPersistence ,CryptoUtil cryptoUtil) {
+    public DocServiceImpl(DocDataPersistence docDataPersistence , CryptoUtil cryptoUtil) throws IOException {
         this.docDataPersistence = docDataPersistence;
         this.docHolder = docDataPersistence.loadHolder();
         textEncryptor = cryptoUtil.getTextEncryptor();
