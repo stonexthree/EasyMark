@@ -31,13 +31,13 @@ public class DocumentController {
     @GetMapping("/list")
     public CommonResponse getAllDoc() {
         return RestResponseFactory.createSuccessResponseWithData(
-                ViewObjectFactories.batchToVO(docService.getAllDoc(), userService.getUserNicknameMap()));
+                ViewObjectFactories.batchToVO(docService.listAllDoc(), userService.getUserNicknameMap()));
     }
 
     @GetMapping("/list/user-doc/{username}")
     public CommonResponse getAllDocByUserName(@PathVariable("username") String username) {
         return RestResponseFactory.createSuccessResponseWithData(
-                ViewObjectFactories.batchToVO(docService.getDocByUserName(username), userService.getUserNicknameMap()));
+                ViewObjectFactories.batchToVO(docService.listDocByUserName(username), userService.getUserNicknameMap()));
     }
 
     @GetMapping("/list/keyword/{keyword}")
@@ -132,7 +132,7 @@ public class DocumentController {
     public CommonResponse getMyDocs() {
         return RestResponseFactory.createSuccessResponseWithData(
                 ViewObjectFactories.batchToVO(
-                        docService.getDocByUserName(SecurityContextHolder.getContext().getAuthentication().getName()),
+                        docService.listDocByUserName(SecurityContextHolder.getContext().getAuthentication().getName()),
                         userService.getUserNicknameMap())
         );
     }

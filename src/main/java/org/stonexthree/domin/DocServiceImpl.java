@@ -100,12 +100,12 @@ public class DocServiceImpl implements DocService{
     }
 
     @Override
-    public Set<DocDTO> getAllDoc() {
+    public Set<DocDTO> listAllDoc() {
         return docHolder.getAllDoc();
     }
 
     @Override
-    public Set<DocDTO> getDocByUserName(String username) {
+    public Set<DocDTO> listDocByUserName(String username) {
         return docHolder.getDocByUserName(username);
     }
 
