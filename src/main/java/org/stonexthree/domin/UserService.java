@@ -24,4 +24,10 @@ public interface UserService {
     Map<String,String> getUserNicknameMap();
 
     boolean hasRoleAdmin();
+
+    String getUserPhoto(String username);
+
+    Map<String,String> listUserPhotos(Set<String> users);
+
+    void changeUserPhoto(String username,String location);
 }

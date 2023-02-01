@@ -1,5 +1,6 @@
 package org.stonexthree.domin;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.stonexthree.persistence.PersistenceManager;
@@ -14,11 +15,13 @@ import java.util.UUID;
 @Component
 public class FileServiceImpl implements FileService{
     private PersistenceManager persistenceManager;
-    private static String FILE_STORAGE_DIR_NAME = "pictures";
+    //private static String FILE_STORAGE_DIR_NAME = "pictures";
     private File saveDir;
-    public FileServiceImpl(PersistenceManager persistenceManager)throws IOException{
+    public FileServiceImpl(@Value("${app-config.storage.persistence.file.picture-dir}")String dir,
+                           PersistenceManager persistenceManager)throws IOException{
         this.persistenceManager = persistenceManager;
-        this.saveDir = new File(persistenceManager.getBaseDir(),FILE_STORAGE_DIR_NAME);
+        dir = dir==null?"pictures":dir;
+        this.saveDir = new File(persistenceManager.getBaseDir(),dir);
         if(!saveDir.isDirectory()){
             saveDir.mkdirs();
         }

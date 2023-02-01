@@ -193,4 +193,32 @@ public class UserServiceImpl implements UserService {
         }
         return false;
     }
+
+    @Override
+    public String getUserPhoto(String username) {
+        if(!this.userMap.containsKey(username)){
+            return "";
+        }
+        return this.userMap.get(username).getPhotoLocation();
+    }
+
+    @Override
+    public Map<String, String> listUserPhotos(Set<String> users) {
+        Map<String,String> result = new HashMap<>();
+        users.forEach(user->{
+            String photo = "";
+            if (userMap.containsKey(user)){
+                photo = userMap.get(user).getPhotoLocation();
+            }
+            result.put(user,photo);
+        });
+        return result;
+    }
+
+    @Override
+    public void changeUserPhoto(String username, String location) {
+        if(userMap.containsKey(username)){
+            userMap.get(username).setPhotoLocation(location);
+        }
+    }
 }

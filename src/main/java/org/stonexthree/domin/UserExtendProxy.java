@@ -10,17 +10,23 @@ public class UserExtendProxy implements UserDetails {
     private UserDetails userDetails;
     private String nickname;
     private Long createTimestamp;
+    /**
+     * 用户头像文件的名称
+     */
+    private String photoLocation;
 
     public UserExtendProxy(UserDetails userDetails, String nickname) {
         this.userDetails = userDetails;
         this.nickname = nickname;
         this.createTimestamp = Instant.now().toEpochMilli();
+        this.photoLocation = "";
     }
 
     public UserExtendProxy(UserDetails userDetails){
         this.userDetails = userDetails;
         this.nickname = "用户";
         this.createTimestamp = Instant.now().toEpochMilli();
+        this.photoLocation = "";
     }
 
     public String getNickname(){
@@ -67,5 +73,13 @@ public class UserExtendProxy implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.userDetails.isEnabled();
+    }
+
+    public String getPhotoLocation() {
+        return photoLocation;
+    }
+
+    public void setPhotoLocation(String photoLocation) {
+        this.photoLocation = photoLocation;
     }
 }

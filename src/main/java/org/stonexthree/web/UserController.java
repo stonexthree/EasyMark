@@ -3,24 +3,33 @@ package org.stonexthree.web;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.stonexthree.domin.FileService;
 import org.stonexthree.domin.UserService;
 import org.stonexthree.web.utils.CommonResponse;
 import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
 
+import javax.servlet.annotation.MultipartConfig;
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author stonexthree
+ *
+ * 用户头像说明：上传后存到指定路径下，获取时先获取文件的名称，然后配合文件服务应用（如nginx静态代理）获取
  */
 @RestController
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
     private UserService userService;
+    private FileService fileService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,FileService fileService) {
         this.userService = userService;
+        this.fileService = fileService;
     }
 
     @GetMapping("/all")
@@ -137,5 +146,22 @@ public class UserController {
     @GetMapping("/profile")
     public CommonResponse getCurrentAccountProfile(){
         return RestResponseFactory.createSuccessResponseWithData(userService.getMe());
+    }
+
+    @GetMapping("/photos")
+    public CommonResponse listUserPhotos(@RequestParam("username")Set<String> usernames){
+        return RestResponseFactory.createSuccessResponseWithData(userService.listUserPhotos(usernames));
+    }
+
+    @PostMapping("/photo")
+    public CommonResponse changeMyPhoto(@RequestParam("photo") MultipartFile[] files) throws IOException {
+        if(files.length!=1){
+            return RestResponseFactory.createFailedResponse()
+                    .setCode(ErrorCodeUtil.CLIENT_REQUEST_PARAMETER_ERROR)
+                    .setMessage("只允许上传一张图像");
+        }
+        String location = fileService.fileUpload(files).get(0);
+        userService.changeUserPhoto(SecurityContextHolder.getContext().getAuthentication().getName(),location);
+        return RestResponseFactory.createSuccessResponse();
     }
 }
