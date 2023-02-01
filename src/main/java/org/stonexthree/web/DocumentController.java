@@ -6,7 +6,7 @@ import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.LabelService;
 import org.stonexthree.domin.UserService;
 import org.stonexthree.domin.ViewObjectFactories;
-import org.stonexthree.domin.model.DocDTO;
+import org.stonexthree.domin.model.Document;
 import org.stonexthree.web.utils.CommonResponse;
 import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
@@ -57,11 +57,11 @@ public class DocumentController {
 
     @GetMapping("/markdown/detail/{id}")
     public CommonResponse getDoc(@PathVariable("id") String id) throws IOException {
-        DocDTO docDTO = docService.getDocById(id);
-        if (docDTO == null) {
+        Document document = docService.getDocById(id);
+        if (document == null) {
             return RestResponseFactory.createFailedResponse().setCode(ErrorCodeUtil.CLIENT_REQUEST_PARAMETER_ERROR).setMessage("请求的文档不存在");
         }
-        return RestResponseFactory.createSuccessResponseWithData(ViewObjectFactories.toVO(docDTO, userService.getCurrentUserNickname()));
+        return RestResponseFactory.createSuccessResponseWithData(ViewObjectFactories.toVO(document, userService.getCurrentUserNickname()));
     }
 
     @DeleteMapping("/markdown/{name}")
@@ -78,8 +78,8 @@ public class DocumentController {
         try {
             docService.createDoc(SecurityContextHolder.getContext().getAuthentication().getName(),
                     docName,
-                    content);
-        }catch (IllegalArgumentException e){
+                    content, false);
+        } catch (IllegalArgumentException e) {
             return RestResponseFactory.createFailedResponse().setCode(ErrorCodeUtil.CLIENT_REQUEST_PARAMETER_ERROR).setMessage("文件名称重复");
         }
         return RestResponseFactory.createSuccessResponse().setMessage("创建成功");
@@ -100,11 +100,11 @@ public class DocumentController {
                                              @RequestParam("docName") String docName,
                                              @RequestParam("label-name") Set<String> labelName) throws IOException {
         try {
-             String docId= docService.createDoc(SecurityContextHolder.getContext().getAuthentication().getName(),
+            String docId = docService.createDoc(SecurityContextHolder.getContext().getAuthentication().getName(),
                     docName,
-                    content);
-            labelService.rebindLabelsToDoc(labelName,docId);
-        }catch (IllegalArgumentException e){
+                    content, false);
+            labelService.rebindLabelsToDoc(labelName, docId);
+        } catch (IllegalArgumentException e) {
             return RestResponseFactory.createFailedResponse().setMessage("文件名称重复");
         }
         return RestResponseFactory.createSuccessResponse().setMessage("创建成功");
@@ -135,6 +135,31 @@ public class DocumentController {
                         docService.listDocByUserName(SecurityContextHolder.getContext().getAuthentication().getName()),
                         userService.getUserNicknameMap())
         );
+    }
+
+    @GetMapping("/my-drafts")
+    public CommonResponse listMyDrafts() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return RestResponseFactory.createSuccessResponseWithData(docService.listDrafts(username));
+    }
+
+    @PostMapping("/draft")
+    public CommonResponse createDraft(@RequestParam("content") String content,
+                                      @RequestParam("docName") String docName) throws IOException {
+        docService.createDoc(SecurityContextHolder.getContext().getAuthentication().getName(),
+                docName,
+                content, true);
+        return RestResponseFactory.createSuccessResponse().setMessage("创建成功");
+    }
+
+    @PutMapping("/draft/submit")
+    public CommonResponse submitDraft(@RequestParam("doc-id")String docId,
+                                      @RequestParam(value = "label-name",required = false) Set<String>labelName) throws IOException {
+        docService.submitDraft(SecurityContextHolder.getContext().getAuthentication().getName(),docId);
+        if (labelName!=null && labelName.size()!=0){
+            labelService.rebindLabelsToDoc(labelName, docId);
+        }
+        return RestResponseFactory.createSuccessResponse();
     }
 
 }

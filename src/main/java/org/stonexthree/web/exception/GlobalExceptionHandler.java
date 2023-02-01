@@ -15,6 +15,8 @@ public class GlobalExceptionHandler {
         if(e instanceof IllegalArgumentException){
             return RestResponseFactory.createFailedResponse().setCode(ErrorCodeUtil.CLIENT_REQUEST_PARAMETER_ERROR).setMessage(e.getMessage());
         }
-        throw e;
+        e.printStackTrace();
+        return RestResponseFactory.createFailedResponse().setCode(ErrorCodeUtil.SERVICE_ERROR).setMessage(e.getMessage());
+        //throw e;
     }
 }

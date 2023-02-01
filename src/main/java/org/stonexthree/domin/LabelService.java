@@ -1,7 +1,5 @@
 package org.stonexthree.domin;
 
-import org.stonexthree.domin.model.DocDTO;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;

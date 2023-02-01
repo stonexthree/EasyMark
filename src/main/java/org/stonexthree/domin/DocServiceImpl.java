@@ -3,56 +3,93 @@ package org.stonexthree.domin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Component;
-import org.stonexthree.domin.model.DocDTO;
-import org.stonexthree.domin.model.DocHolder;
+import org.stonexthree.domin.model.Document;
 import org.stonexthree.persistence.DocDataPersistence;
 import org.stonexthree.security.util.CryptoUtil;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
 @Component
 @Slf4j
-public class DocServiceImpl implements DocService{
+public class DocServiceImpl implements DocService {
     private DocDataPersistence docDataPersistence;
-    private DocHolder docHolder;
+    /**
+     * key:账号名称，value:账号创建的文档
+     */
+    private Map<String, Set<Document>> usernameDocMap;
+
     private TextEncryptor textEncryptor;
 
-    public DocServiceImpl(DocDataPersistence docDataPersistence , CryptoUtil cryptoUtil) throws IOException {
+    public DocServiceImpl(DocDataPersistence docDataPersistence, CryptoUtil cryptoUtil) throws IOException {
         this.docDataPersistence = docDataPersistence;
-        this.docHolder = docDataPersistence.loadHolder();
+        this.usernameDocMap = docDataPersistence.loadMap();
         textEncryptor = cryptoUtil.getTextEncryptor();
     }
 
+    private boolean nameUsed(String username, String docName) {
+        if (usernameDocMap.containsKey(username)) {
+            for (Document doc : usernameDocMap.get(username)) {
+                if (doc.getDocName().equals(docName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private synchronized void addDocToMap(String userName, Document doc) {
+        Set<Document> userDocSet;
+        if (!usernameDocMap.containsKey(userName)) {
+            userDocSet = new HashSet<>();
+        } else {
+            userDocSet = usernameDocMap.get(userName);
+        }
+        userDocSet.add(doc);
+        usernameDocMap.put(userName, userDocSet);
+    }
+
+    private synchronized void deleteDocFromMap(String userName, Document target) {
+        Set<Document> userDocSet = usernameDocMap.get(userName);
+        try {
+            userDocSet.remove(target);
+        } catch (NoSuchElementException e) {
+            return;
+        }
+    }
+
     @Override
-    public synchronized String createDoc(String username, String docName, String content) throws IOException{
-        if(docHolder.nameUsed(username,docName)){
+    public synchronized String createDoc(String username, String docName, String content, boolean isDraft) throws IOException {
+        if (nameUsed(username, docName)) {
             throw new IllegalArgumentException("文档名称已使用");
         }
         String fileName = docDataPersistence.writeDocToFile(textEncryptor.encrypt(content));
-        DocDTO doc = new DocDTO(fileName,docName,fileName,username, Instant.now().toEpochMilli());
-        docHolder.addDoc(username, doc);
+        Document doc = isDraft ?
+                Document.createDraft(fileName, docName, fileName, username, Instant.now().toEpochMilli()) :
+                Document.createDocument(fileName, docName, fileName, username, Instant.now().toEpochMilli());
+        addDocToMap(username, doc);
         try {
-            docDataPersistence.writeHolder(docHolder);
-        }catch (IOException e){
+            docDataPersistence.writeMap(usernameDocMap);
+        } catch (IOException e) {
             log.warn(e.getMessage());
-            docHolder.DeleteDoc(username,doc);
+            deleteDocFromMap(username, doc);
             throw e;
         }
         return doc.getDocId();
     }
 
     @Override
-    public synchronized boolean deleteDoc(String username, String docId) throws IOException{
-        DocDTO tempDoc = docHolder.getDocById(docId);
-        if(tempDoc == null || !username.equals(tempDoc.getDocAuthor())){
+    public synchronized boolean deleteDoc(String username, String docId) throws IOException {
+        Document tempDoc = getDocById(docId);
+        if (tempDoc == null || !username.equals(tempDoc.getDocAuthor())) {
             return false;
         }
-        docHolder.DeleteDoc(username,tempDoc);
-        try{
-            docDataPersistence.writeHolder(docHolder);
-        }catch (IOException e){
-            docHolder.addDoc(username,tempDoc);
+        deleteDocFromMap(username, tempDoc);
+        try {
+            docDataPersistence.writeMap(usernameDocMap);
+        } catch (IOException e) {
+            addDocToMap(username, tempDoc);
             throw e;
         }
         docDataPersistence.deleteDoc(tempDoc.getDocLocation());
@@ -60,95 +97,157 @@ public class DocServiceImpl implements DocService{
     }
 
     @Override
-    public synchronized boolean updateDoc(String username, String docId, String content) throws IOException{
-        DocDTO target = docHolder.getDocById(docId);
-        if(target == null || !username.equals(target.getDocAuthor())){
+    public synchronized boolean updateDoc(String username, String docId, String content) throws IOException {
+        Document target = getDocById(docId);
+        if (target == null || !username.equals(target.getDocAuthor())) {
             return false;
         }
-        String fileName = docHolder.getDocById(docId).getDocLocation();
-        //String oldFileContent = docDataPersistence.ReadDoc(fileName);
-        try{
-            docDataPersistence.writeDocToFile(textEncryptor.encrypt(content),fileName);
+        String fileName = target.getDocLocation();
+        try {
+            docDataPersistence.writeDocToFile(textEncryptor.encrypt(content), fileName);
             target.setUpdateTimestamp(Instant.now().toEpochMilli());
-            docDataPersistence.writeHolder(docHolder);
-        }catch (IOException e){
+            docDataPersistence.writeMap(usernameDocMap);
+        } catch (IOException e) {
             log.warn(e.getMessage());
             throw e;
         }
-
         return true;
 
     }
 
     @Override
-    public String getDocContent(String docId) throws IOException{
-        DocDTO docDTO = docHolder.getDocById(docId);
-        if(docDTO == null){
+    public String getDocContent(String docId) throws IOException {
+        Document document = getDocById(docId);
+        if (document == null) {
             return null;
         }
-        String encodeContent = docDataPersistence.readDoc(docDTO.getDocLocation());
+        String encodeContent = docDataPersistence.readDoc(document.getDocLocation());
         return textEncryptor.decrypt(encodeContent);
     }
 
     @Override
-    public boolean userHasDoc(String username,String docId) {
-        DocDTO docDTO = docHolder.getDocById(docId);
-        if(docDTO == null){
+    public boolean userHasDoc(String username, String docId) {
+        Document document = getDocById(docId);
+        if (document == null) {
             return false;
         }
-        return docDTO.getDocAuthor().equals(username);
+        return document.getDocAuthor().equals(username);
     }
 
     @Override
-    public Set<DocDTO> listAllDoc() {
-        return docHolder.getAllDoc();
+    public Set<Document> listAllDoc() {
+        Set<Document> result = new HashSet<>();
+        for (Map.Entry<String, Set<Document>> entry : usernameDocMap.entrySet()) {
+            //result.addAll(entry.getValue());
+            result.addAll(entry.getValue().stream().filter(document -> !document.isDraft()).toList());
+        }
+        return result;
     }
 
     @Override
-    public Set<DocDTO> listDocByUserName(String username) {
-        return docHolder.getDocByUserName(username);
+    public Set<Document> listDocByUserName(String username) {
+        Set<Document> result = new HashSet<>();
+        if (usernameDocMap.containsKey(username)) {
+            result.addAll(usernameDocMap.get(username).stream().filter(document -> !document.isDraft()).toList());
+        }
+        return result;
     }
 
     @Override
-    public Set<DocDTO> searchDocByName(String keyword) {
-        return docHolder.searchByName(keyword);
+    public Set<Document> searchDocByName(String keyword) {
+        Set<Document> result = new HashSet<>();
+        for (Set<Document> docSet : usernameDocMap.values()) {
+            docSet
+                    .stream()
+                    .filter(doc -> (!doc.isDraft()) && doc.getDocName().contains(keyword))
+                    .forEach(result::add);
+        }
+        return result;
     }
 
     @Override
     public synchronized boolean changeDocName(String username, String docId, String newDocName) {
-        DocDTO target = docHolder.getDocById(docId);
-        if(target == null || !username.equals(target.getDocAuthor())){
+        Document target = getDocById(docId);
+        if (target == null || !username.equals(target.getDocAuthor())) {
             return false;
         }
-        if(newDocName.equals(target.getDocName())){
+        if (newDocName.equals(target.getDocName())) {
             return true;
         }
-        if( docHolder.nameUsed(username,newDocName)){
+        if (nameUsed(username, newDocName)) {
             return false;
         }
         target.setDocName(newDocName);
         String oldDocName = target.getDocName();
         try {
-            docDataPersistence.writeHolder(docHolder);
-        }catch (IOException e){
+            docDataPersistence.writeMap(usernameDocMap);
+        } catch (IOException e) {
             log.warn(e.getMessage());
-            docHolder.getDocById(docId).setDocName(oldDocName);
+            getDocById(docId).setDocName(oldDocName);
         }
         return true;
     }
 
     @Override
-    public boolean docExist(String docId){
-        return docHolder.fileExistById(docId);
+    public boolean docExist(String docId) {
+        return getDocById(docId) != null;
     }
 
     @Override
-    public DocDTO getDocById(String docId) {
-        return docHolder.getDocById(docId);
+    public Document getDocById(String docId) {
+        for (Set<Document> documentSet : usernameDocMap.values()) {
+            for (Document document : documentSet) {
+                if (document.getDocId().equals(docId)) {
+                    return document;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
-    public Set<DocDTO> getDocsByIds(Collection docIds) {
-        return docHolder.getDocsByIds(docIds);
+    public Set<Document> listDocsByIds(Collection docIds) {
+        Set<Document> result = new HashSet<>();
+        for (Set<Document> documentSet : usernameDocMap.values()) {
+            result.addAll(
+                    documentSet.stream()
+                            .filter(dto -> docIds.contains(dto.getDocId()))
+                            .toList()
+            );
+        }
+        return result;
+    }
+
+    @Override
+    public void submitDraft(String username, String docId) throws IOException {
+        Document target;
+        try {
+            target = usernameDocMap.get(username)
+                    .stream()
+                    .filter(document -> docId.equals(document.getDocId()))
+                    .findFirst().get();
+        }catch (RuntimeException e){
+            if (e instanceof NoSuchElementException || e instanceof NullPointerException){
+                throw new IllegalArgumentException("文档或用户不存在");
+            }
+            throw e;
+        }
+        target.setDraft(false);
+        docDataPersistence.writeMap(usernameDocMap);
+    }
+
+    @Override
+    public Set<Document> listDrafts(String username) {
+        Set<Document> drafts = new HashSet<>();
+        Set<Document> targets = usernameDocMap.get(username);
+        if(targets==null||targets.size()==0){
+            return drafts;
+        }
+        targets.forEach(document->{
+            if(document.isDraft()){
+                drafts.add(document);
+            }
+        });
+        return drafts;
     }
 }

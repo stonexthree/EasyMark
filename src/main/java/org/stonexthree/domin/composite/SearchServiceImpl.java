@@ -3,7 +3,7 @@ package org.stonexthree.domin.composite;
 import org.springframework.stereotype.Component;
 import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.LabelService;
-import org.stonexthree.domin.model.DocDTO;
+import org.stonexthree.domin.model.Document;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,18 +31,18 @@ public class SearchServiceImpl implements SearchService{
     }
 
     @Override
-    public Set<DocDTO> searchDoc(String scope,String keyword) {
-        Set<DocDTO> dtos = new HashSet<>();
+    public Set<Document> searchDoc(String scope, String keyword) {
+        Set<Document> dtos = new HashSet<>();
         if(scope.equals("name")){
             dtos.addAll(docService.searchDocByName(keyword));
             return dtos;
         }
         if(scope.equals("label")){
-            dtos.addAll(docService.getDocsByIds(labelService.getDocIdByLabel(keyword)));
+            dtos.addAll(docService.listDocsByIds(labelService.getDocIdByLabel(keyword)));
             return dtos;
         }
         dtos.addAll(docService.searchDocByName(keyword));
-        dtos.addAll(docService.getDocsByIds(labelService.searchDocByLabelKeyword(keyword)));
+        dtos.addAll(docService.listDocsByIds(labelService.searchDocByLabelKeyword(keyword)));
         return dtos;
     }
 }

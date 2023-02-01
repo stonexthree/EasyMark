@@ -3,9 +3,12 @@ package org.stonexthree.persistence;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.stonexthree.domin.model.DocHolder;
+import org.stonexthree.domin.model.Document;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -14,18 +17,15 @@ import java.util.UUID;
 @Component
 @Slf4j
 public class DocDataPersistence {
-    //private File persistenceFile;
-    //private static final String HOLDER_FILE_NAME = "doc.data";
-    //private static final String DOC_SAVE_DIR = "docs";
     private File docSaveDir;
 
-    private ObjectPersistenceHandler<DocHolder> objectPersistenceHandler;
+    private ObjectPersistenceHandler<Map<String, Set<Document>>> objectPersistenceHandler;
 
     public DocDataPersistence(@Value("${app-config.storage.persistence.file.doc.holder}") String holderFile,
                               @Value("${app-config.storage.persistence.file.doc.dir}") String docDir,
                               PersistenceManager manager) throws IOException {
-        //this.persistenceFile = new File(manager.getBaseDir(), HOLDER_FILE_NAME);
-        this.objectPersistenceHandler = manager.getHandler(holderFile,DocHolder::new);
+        holderFile = holderFile==null?"doc.data":holderFile;
+        this.objectPersistenceHandler = manager.getHandler(holderFile, HashMap::new);
         docDir = docDir == null?"docs":docDir;
         docSaveDir = new File(manager.getBaseDir(), docDir);
         if (!this.docSaveDir.exists()) {
@@ -33,39 +33,12 @@ public class DocDataPersistence {
         }
     }
 
-    public DocHolder loadHolder() throws IOException {
-/*        if (!persistenceFile.exists() || persistenceFile.isDirectory()) {
-            try {
-                persistenceFile.createNewFile();
-            } catch (IOException e) {
-                log.error(e.getMessage());
-                return new DocHolder();
-            }
-        }
-        try (ObjectInputStream is = new ObjectInputStream(
-                new FileInputStream(persistenceFile))) {
-            return (DocHolder) is.readObject();
-        } catch (EOFException eofException) {
-            return new DocHolder();
-        } catch (Exception exception) {
-            log.error(exception.getMessage());
-            return new DocHolder();
-        }*/
+    public Map<String,Set<Document>> loadMap() throws IOException {
         return objectPersistenceHandler.readObject();
     }
 
-    public void writeHolder(DocHolder holder) throws IOException {
-        /*if (!persistenceFile.exists() || persistenceFile.isDirectory()) {
-            persistenceFile.createNewFile();
-        }
-        try (ObjectOutputStream os = new ObjectOutputStream(
-                new FileOutputStream(persistenceFile))) {
-            os.writeObject(holder);
-        } catch (IOException e) {
-            log.warn(e.getMessage());
-            throw e;
-        }*/
-        objectPersistenceHandler.writeObject(holder);
+    public void writeMap(Map<String,Set<Document>> map) throws IOException {
+        objectPersistenceHandler.writeObject(map);
     }
 
     public String writeDocToFile(String content, String targetFileName) throws IOException {
