@@ -121,4 +121,9 @@ public interface DocService {
      * @return
      */
     Set<Document> listDrafts(String username);
+
+    void collectDoc(String username,String docId) throws IOException;
+    void removeCollect(String username,String docId) throws IOException;
+    Set<Document> listCollectedDocument(String username);
+    boolean isDocCollected(String username,String docId);
 }

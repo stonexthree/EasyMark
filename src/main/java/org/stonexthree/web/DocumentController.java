@@ -162,4 +162,31 @@ public class DocumentController {
         return RestResponseFactory.createSuccessResponse();
     }
 
+    @GetMapping("/collections")
+    public CommonResponse listMyCollections(){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Set<Document> collections = docService.listCollectedDocument(username);
+        return RestResponseFactory.createSuccessResponseWithData(
+                ViewObjectFactories.batchToVO(collections,userService.getUserNicknameMap()));
+    }
+
+    @PutMapping("/collections/{docId}")
+    public CommonResponse collectDoc(@PathVariable("docId")String docId) throws IOException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        docService.collectDoc(username,docId);
+        return RestResponseFactory.createSuccessResponse();
+    }
+
+    @DeleteMapping("/collections/{docId}")
+    public CommonResponse removeCollectedDoc(@PathVariable("docId")String docId) throws IOException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        docService.removeCollect(username,docId);
+        return RestResponseFactory.createSuccessResponse();
+    }
+
+    @GetMapping("/collect/status/{docId}")
+    public CommonResponse isDocCollected(@PathVariable("docId")String docId) throws IOException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return RestResponseFactory.createSuccessResponseWithData(docService.isDocCollected(username,docId));
+    }
 }

@@ -7,6 +7,7 @@ import org.stonexthree.domin.model.Document;
 import org.stonexthree.persistence.DocDataPersistence;
 import org.stonexthree.security.util.CryptoUtil;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -19,12 +20,17 @@ public class DocServiceImpl implements DocService {
      * key:账号名称，value:账号创建的文档
      */
     private Map<String, Set<Document>> usernameDocMap;
+    /**
+     * key:账户名称，value:该账户收藏的文档
+     */
+    private Map<String,Set<String>> userCollectMap;
 
     private TextEncryptor textEncryptor;
 
     public DocServiceImpl(DocDataPersistence docDataPersistence, CryptoUtil cryptoUtil) throws IOException {
         this.docDataPersistence = docDataPersistence;
         this.usernameDocMap = docDataPersistence.loadMap();
+        this.userCollectMap = docDataPersistence.loadCollectMap();
         textEncryptor = cryptoUtil.getTextEncryptor();
     }
 
@@ -249,5 +255,43 @@ public class DocServiceImpl implements DocService {
             }
         });
         return drafts;
+    }
+
+    @Override
+    public void collectDoc(String username, String docId) throws IOException {
+        if(!docExist(docId)){
+            throw new IllegalArgumentException("文档不存在");
+        }
+        Set<String> targetSet = this.userCollectMap.containsKey(username)?this.userCollectMap.get(username):new HashSet<>();
+        targetSet.add(docId);
+        this.userCollectMap.put(username,targetSet);
+        docDataPersistence.writeCollectMap(this.userCollectMap);
+    }
+
+    @Override
+    public void removeCollect(String username, String docId) throws IOException {
+        if(!docExist(docId)){
+            throw new IllegalArgumentException("文档不存在");
+        }
+        Set<String> targetSet = this.userCollectMap.containsKey(username)?this.userCollectMap.get(username):new HashSet<>();
+        targetSet.remove(docId);
+        this.userCollectMap.put(username,targetSet);
+        docDataPersistence.writeCollectMap(this.userCollectMap);
+    }
+
+    @Override
+    public boolean isDocCollected(String username, String docId) {
+        if(this.userCollectMap.containsKey(username)&&this.userCollectMap.get(username).contains(docId)){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Set<Document> listCollectedDocument(String username) {
+        if(!this.userCollectMap.containsKey(username)){
+            return new HashSet<>();
+        }
+        return listDocsByIds(this.userCollectMap.get(username));
     }
 }

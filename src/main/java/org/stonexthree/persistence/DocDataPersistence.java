@@ -20,15 +20,19 @@ public class DocDataPersistence {
     private File docSaveDir;
 
     private ObjectPersistenceHandler<Map<String, Set<Document>>> objectPersistenceHandler;
+    private ObjectPersistenceHandler<Map<String,Set<String>>> collectMapPersistencehandler;
 
     public DocDataPersistence(@Value("${app-config.storage.persistence.file.doc.holder}") String holderFile,
                               @Value("${app-config.storage.persistence.file.doc.dir}") String docDir,
+                              @Value("${app-config.storage.persistence.file.doc.collect}") String collectFile,
                               PersistenceManager manager) throws IOException {
         holderFile = holderFile==null?"doc.data":holderFile;
         this.objectPersistenceHandler = manager.getHandler(holderFile, HashMap::new);
+        collectFile = collectFile ==null?"collect.data":collectFile;
+        this.collectMapPersistencehandler = manager.getHandler(collectFile,HashMap::new);
         docDir = docDir == null?"docs":docDir;
         docSaveDir = new File(manager.getBaseDir(), docDir);
-        if (!this.docSaveDir.exists()) {
+        if (!this.docSaveDir.isDirectory()) {
             docSaveDir.mkdirs();
         }
     }
@@ -39,6 +43,14 @@ public class DocDataPersistence {
 
     public void writeMap(Map<String,Set<Document>> map) throws IOException {
         objectPersistenceHandler.writeObject(map);
+    }
+
+    public Map<String,Set<String>> loadCollectMap() throws IOException{
+        return collectMapPersistencehandler.readObject();
+    }
+
+    public void writeCollectMap(Map<String,Set<String>> map) throws IOException{
+        collectMapPersistencehandler.writeObject(map);
     }
 
     public String writeDocToFile(String content, String targetFileName) throws IOException {

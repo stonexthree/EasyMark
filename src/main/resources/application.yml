@@ -20,6 +20,7 @@ app-config:
         doc:
           holder: doc.data
           dir: docs
+          collect: collect.data
   security:
     password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285
