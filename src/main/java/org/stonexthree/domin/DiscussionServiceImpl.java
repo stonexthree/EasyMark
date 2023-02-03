@@ -31,61 +31,69 @@ public class DiscussionServiceImpl implements DiscussionService {
         this.userService = userService;
         this.docService = docService;
         //this.discussionsPersistence = discussionsPersistence;
-        fileName = fileName == null ?"discussions.data" :fileName;
-        this.discussionsPersistenceHandler = persistenceManager.getHandler(fileName,ArrayList::new);
+        fileName = fileName == null ? "discussions.data" : fileName;
+        this.discussionsPersistenceHandler = persistenceManager.getHandler(fileName, ArrayList::new);
         //this.topicList = discussionsPersistence.loadDiscussions();
         this.topicList = discussionsPersistenceHandler.readObject();
     }
 
 
     @Override
-    public void createTopic(String docId, String detail, String author) throws IOException {
+    @UseNotification(type = {Notification.NotificationType.DOC_REPLY})
+    public DiscussionTopic createTopic(String docId, String detail, String author) throws IOException {
         Assert.isTrue(docService.docExist(docId), "文档不存在");
         String id = UUID.randomUUID().toString();
         DiscussionTopic topic = new DiscussionTopic(docId, id, detail, author);
         topicList.add(topic);
         //discussionsPersistence.saveDiscussions(topicList);
         discussionsPersistenceHandler.writeObject(topicList);
+        return topic;
     }
 
     @Override
-    public void closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException {
+    @UseNotification(type = {Notification.NotificationType.TOPIC_CLOSED})
+    public DiscussionTopic closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException {
         Assert.isTrue(docService.docExist(docId), "文档不存在");
         String docAuthor = docService.getDocById(docId).getDocAuthor();
         Optional<DiscussionTopic> targetTopic = topicList.stream().filter(t -> topicId.equals(t.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "关闭的主题不存在");
         //设置关闭类型（来源），前面的会被后面的覆盖
         DiscussionTopic.ClosedTypeEnum closedType = DiscussionTopic.ClosedTypeEnum.NONE;
-        if(isAdmin){
+        if (isAdmin) {
             closedType = DiscussionTopic.ClosedTypeEnum.ADMIN;
         }
-        if(user.equals(docAuthor)){
+        if (user.equals(docAuthor)) {
             closedType = DiscussionTopic.ClosedTypeEnum.DOCUMENT_AUTHOR;
         }
-        if(user.equals(targetTopic.get().getAuthor())){
+        if (user.equals(targetTopic.get().getAuthor())) {
             closedType = DiscussionTopic.ClosedTypeEnum.TOPIC_AUTHOR;
         }
-        Assert.isTrue(closedType.compareTo(DiscussionTopic.ClosedTypeEnum.NONE)!=0,"无法关闭其他用户创建的主题");
+        Assert.isTrue(closedType.compareTo(DiscussionTopic.ClosedTypeEnum.NONE) != 0, "无法关闭其他用户创建的主题");
         targetTopic.get().setClosed(true);
         targetTopic.get().setClosedType(closedType);
         //discussionsPersistence.saveDiscussions(topicList);
         discussionsPersistenceHandler.writeObject(topicList);
+        return targetTopic.get();
     }
 
     @Override
-    synchronized public void replyTopic(DiscussionDTO discussionDTO) throws IOException {
+    @UseNotification(type = {Notification.NotificationType.DOC_REPLY,
+            Notification.NotificationType.TOPIC_REPLY,
+            Notification.NotificationType.DISCUSSION_REPLY})
+    synchronized public Discussion replyTopic(DiscussionDTO discussionDTO) throws IOException {
         Assert.isTrue(docService.docExist(discussionDTO.getDocId()), "文档不存在");
         Optional<DiscussionTopic> targetTopic = topicList.stream()
                 .filter(topic -> topic.getTopicId().equals(discussionDTO.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "回复的主题不存在");
-        Assert.isTrue(!targetTopic.get().isClosed(),"回复的主题已关闭");
+        Assert.isTrue(!targetTopic.get().isClosed(), "回复的主题已关闭");
         int existedDiscussionCount = targetTopic.get().getDiscussionCount();
-        Assert.isTrue(discussionDTO.getQuote() < existedDiscussionCount,"引用的回复不存在");
-        Discussion discussion = Discussion.buildDiscussion(targetTopic.get(),discussionDTO);
+        Assert.isTrue(discussionDTO.getQuote() < existedDiscussionCount, "引用的回复不存在");
+        Discussion discussion = Discussion.buildDiscussion(targetTopic.get(), discussionDTO);
         targetTopic.get().addDiscussions(discussion);
         targetTopic.get().setLastReplyTimeStamp(Instant.now().toEpochMilli());
         //discussionsPersistence.saveDiscussions(topicList);
         discussionsPersistenceHandler.writeObject(topicList);
+        return discussion;
     }
 
     @Override
@@ -98,11 +106,11 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public List<DiscussionVO> listDiscussionsByTopicId(String docId, String topicId) {
-        Assert.isTrue(docService.docExist(docId), "文档不存在");
-        Optional<DiscussionTopic> targetTopic = topicList.stream().filter(t->topicId.equals(t.getTopicId())).findFirst();
+        //Assert.isTrue(docService.docExist(docId), "文档不存在");
+        Optional<DiscussionTopic> targetTopic = topicList.stream().filter(t -> topicId.equals(t.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "查询的主题不存在");
         List<DiscussionVO> result = new ArrayList<>();
-        targetTopic.get().getDiscussions().forEach(discussionDTO -> result.add(new DiscussionVO(targetTopic.get(),discussionDTO)));
+        targetTopic.get().getDiscussions().forEach(discussionDTO -> result.add(new DiscussionVO(targetTopic.get(), discussionDTO)));
         return result;
     }
 
@@ -121,11 +129,40 @@ public class DiscussionServiceImpl implements DiscussionService {
         topicList.forEach(topic -> {
             List<Discussion> discussions = topic.getDiscussions();
             discussions.forEach(discussion -> {
-                if(username.equals(discussion.getAuthor())){
-                    result.add(new DiscussionVO(topic,discussion));
+                if (username.equals(discussion.getAuthor())) {
+                    result.add(new DiscussionVO(topic, discussion));
                 }
             });
         });
         return result;
+    }
+
+    @Override
+    public DiscussionTopicVO getTopicVO(String topicId) {
+        DiscussionTopic target = topicList.stream()
+                .filter(topic -> topicId.equals(topic.getTopicId()))
+                .findFirst().get();
+        Assert.isTrue(target != null,"回复主题不存在");
+        return new DiscussionTopicVO(target);
+    }
+
+    @Override
+    public Discussion getDiscussion(String topicId,int quote) {
+        DiscussionTopic target = topicList.stream()
+                .filter(topic -> topicId.equals(topic.getTopicId()))
+                .findFirst().get();
+        Assert.isTrue(target != null,"回复主题不存在");
+        Assert.isTrue(quote>=0&&quote < target.getDiscussionCount(),"引用的回复不存在");
+        List<Discussion> list = target.getDiscussions();
+        Discussion inIndex = list.get(quote);
+        if(inIndex.getIndex() == quote){
+            return list.get(quote);
+        }
+        for(Discussion discussion: list){
+            if (discussion.getIndex() == quote){
+                return discussion;
+            }
+        }
+        throw new RuntimeException("回复索引错误，主题："+topicId);
     }
 }

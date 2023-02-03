@@ -13,31 +13,37 @@ import java.util.List;
 public interface DiscussionService {
     /**
      * 在指定文档下创建一个回复的主题
-     * @param docId 文档ID
+     *
+     * @param docId  文档ID
      * @param detail 主题内容
      * @param author 主题作者
+     * @return
      * @throws IOException
      */
-    void createTopic(String docId,String detail, String author) throws IOException;
+    DiscussionTopic createTopic(String docId, String detail, String author) throws IOException;
 
     /**
      * void closeTopic(String user, String docId, String topicId, boolean isAdmin)
      * <br/>
      * 关闭一个主题。只有管理员、主题创建者、文档作者可以执行这个操作。
-     * @param user 操作用户名
-     * @param docId 文档ID
+     *
+     * @param user    操作用户名
+     * @param docId   文档ID
      * @param topicId 主题ID
      * @param isAdmin 是否为管理员操作
+     * @return
      * @throws IOException
      */
-    void closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException;
+    DiscussionTopic closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException;
 
     /**
      * 回复一个主题
+     *
      * @param discussionDTO 回复的数据对象
+     * @return
      * @throws IOException
      */
-    void replyTopic(DiscussionDTO discussionDTO) throws IOException;
+    Discussion replyTopic(DiscussionDTO discussionDTO) throws IOException;
 
     /**
      * 获取指定文档下的所有主题
@@ -67,4 +73,8 @@ public interface DiscussionService {
      * @return
      */
     List<DiscussionVO> listDiscussionByUser(String username);
+
+    DiscussionTopicVO getTopicVO(String topicId);
+
+    Discussion getDiscussion(String topicId,int quote);
 }

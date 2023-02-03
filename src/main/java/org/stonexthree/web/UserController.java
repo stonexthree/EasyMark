@@ -95,9 +95,9 @@ public class UserController {
 
     @PostMapping("/password")
     public CommonResponse changePassword(@RequestParam String newPassword){
-        boolean result;
+        //boolean result;
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        try{
+/*        try{
             result = userService.changePassword(username,newPassword);
         }catch (IOException e){
             log.error(e.getMessage());
@@ -105,8 +105,8 @@ public class UserController {
         }
         if(result){
             return RestResponseFactory.createSuccessResponse();
-        }
-        return RestResponseFactory.createFailedResponse().setMessage("用户不存在");
+        }*/
+        return setPassword(username,newPassword);
     }
 
     @PostMapping("/admin/password")

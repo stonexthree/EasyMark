@@ -1,10 +1,12 @@
-package org.stonexthree.web.utils;
+package org.stonexthree.web;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.stonexthree.domin.DiscussionService;
 import org.stonexthree.domin.model.DiscussionDTO;
+import org.stonexthree.web.utils.CommonResponse;
+import org.stonexthree.web.utils.RestResponseFactory;
 
 import java.io.IOException;
 
