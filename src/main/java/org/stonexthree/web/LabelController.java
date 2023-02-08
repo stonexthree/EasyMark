@@ -68,13 +68,13 @@ public class LabelController {
         }
         return RestResponseFactory.createSuccessResponse();
     }
-    @DeleteMapping("/map/doc/{doc-id}")
+/*    @DeleteMapping("/map/doc/{doc-id}")
     public CommonResponse deleteDocMap(@PathVariable("doc-id") String docId) throws IOException{
         if(!labelService.removeDocBinds(docId)){
             return RestResponseFactory.createFailedResponse().setMessage("文档不存在");
         }
         return RestResponseFactory.createSuccessResponse();
-    }
+    }*/
 
     @GetMapping("/keyword/{keyword}")
     public CommonResponse getLabelByKeyword(@PathVariable("keyword") String keyword){

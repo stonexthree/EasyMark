@@ -23,6 +23,7 @@ app-config:
           collect: collect.data
         picture-dir: pictures
         notification: notification.data
+        count: count.data
   security:
     password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285

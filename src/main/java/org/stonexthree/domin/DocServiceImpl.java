@@ -294,4 +294,22 @@ public class DocServiceImpl implements DocService {
         }
         return listDocsByIds(this.userCollectMap.get(username));
     }
+
+    @Override
+    public Map<String, Integer> listUserCreateDocCount() {
+        Map<String,Integer> result = new HashMap<>();
+        usernameDocMap.forEach((key,value)->result.put(key, value.size()));
+        return result;
+    }
+
+    @Override
+    public Map<String, String> getIdNameMap() {
+        Map<String,String> result = new HashMap<>();
+        usernameDocMap.forEach((key,value)->{
+            value.forEach(document -> {
+                result.put(document.getDocId(),document.getDocName());
+            });
+        });
+        return result;
+    }
 }

@@ -2,6 +2,7 @@ package org.stonexthree.domin;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public interface LabelService {
@@ -75,4 +76,10 @@ public interface LabelService {
      * @return
      */
     Set<String> searchDocByLabelKeyword(String keyword);
+
+    /**
+     * 获取各标签对应的文档数量
+     * @return
+     */
+    Map<String,Integer> getLabelUsedCount();
 }

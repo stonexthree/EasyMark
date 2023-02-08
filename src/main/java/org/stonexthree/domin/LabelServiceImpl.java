@@ -146,9 +146,9 @@ public class LabelServiceImpl implements Serializable, LabelService {
 
     @Override
     public synchronized boolean removeDocBinds(String docId) throws IOException{
-        if(!docService.docExist(docId)){
+/*        if(!docService.docExist(docId)){
             return false;
-        }
+        }*/
         Set<String> removedKeySet = new HashSet<>();
         for(Map.Entry<String,Set<String>> entry:labelDocMap.entrySet()){
             if(entry.getValue().remove(docId)){
@@ -220,6 +220,13 @@ public class LabelServiceImpl implements Serializable, LabelService {
                 .stream()
                 .filter(entry -> entry.getKey().contains(keyword))
                 .forEach(entry -> result.addAll(entry.getValue()));
+        return result;
+    }
+
+    @Override
+    public Map<String, Integer> getLabelUsedCount() {
+        Map<String,Integer> result = new HashMap<>();
+        labelDocMap.forEach((key, value) -> result.put(key, value.size()));
         return result;
     }
 }

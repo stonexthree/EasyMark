@@ -4,6 +4,7 @@ import org.stonexthree.domin.model.Document;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -126,4 +127,16 @@ public interface DocService {
     void removeCollect(String username,String docId) throws IOException;
     Set<Document> listCollectedDocument(String username);
     boolean isDocCollected(String username,String docId);
+
+    /**
+     * 获取各用户创建的文档数
+     * @return
+     */
+    Map<String,Integer> listUserCreateDocCount();
+
+    /**
+     * 返回文档id和文档名称的映射
+     * @return
+     */
+    Map<String,String> getIdNameMap();
 }

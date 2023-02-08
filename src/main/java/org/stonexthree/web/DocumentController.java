@@ -7,6 +7,9 @@ import org.stonexthree.domin.LabelService;
 import org.stonexthree.domin.UserService;
 import org.stonexthree.domin.ViewObjectFactories;
 import org.stonexthree.domin.model.Document;
+import org.stonexthree.domin.statistics.DocCounter;
+import org.stonexthree.domin.statistics.StatisticsService;
+import org.stonexthree.domin.statistics.ViewAdd;
 import org.stonexthree.web.utils.CommonResponse;
 import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
@@ -21,11 +24,13 @@ public class DocumentController {
     private UserService userService;
 
     private LabelService labelService;
+    private StatisticsService statisticsService;
 
-    public DocumentController(DocService docService, UserService userService, LabelService labelService) {
+    public DocumentController(DocService docService, UserService userService, LabelService labelService,StatisticsService statisticsService) {
         this.docService = docService;
         this.userService = userService;
         this.labelService = labelService;
+        this.statisticsService = statisticsService;
     }
 
     @GetMapping("/list")
@@ -47,6 +52,7 @@ public class DocumentController {
     }
 
     @GetMapping("/markdown/{id}")
+    @ViewAdd(id="id")
     public CommonResponse getDocContent(@PathVariable("id") String id) throws IOException {
         String content = docService.getDocContent(id);
         if (content == null) {
@@ -64,11 +70,13 @@ public class DocumentController {
         return RestResponseFactory.createSuccessResponseWithData(ViewObjectFactories.toVO(document, userService.getCurrentUserNickname()));
     }
 
-    @DeleteMapping("/markdown/{name}")
-    public CommonResponse deleteDoc(@PathVariable("name") String name) throws IOException {
-        if (docService.deleteDoc(SecurityContextHolder.getContext().getAuthentication().getName(), name)) {
+    @DeleteMapping("/markdown/{doc-id}")
+    public CommonResponse deleteDoc(@PathVariable("doc-id") String docId) throws IOException {
+        if (docService.deleteDoc(SecurityContextHolder.getContext().getAuthentication().getName(), docId)) {
             return RestResponseFactory.createSuccessResponse().setMessage("删除成功");
         }
+        labelService.removeDocBinds(docId);
+        statisticsService.removeDoc(docId);
         return RestResponseFactory.createFailedResponse().setMessage("删除失败：文件不存在或不属于操作用户");
     }
 
