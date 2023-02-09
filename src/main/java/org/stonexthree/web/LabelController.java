@@ -1,6 +1,8 @@
 package org.stonexthree.web;
 
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.LabelService;
 import org.stonexthree.web.utils.CommonResponse;
 import org.stonexthree.web.utils.RestResponseFactory;
@@ -13,9 +15,11 @@ import java.util.Set;
 @RequestMapping("/label")
 public class LabelController {
     private LabelService labelService;
+    private DocService docService;
 
-    public LabelController(LabelService labelService) {
+    public LabelController(LabelService labelService,DocService docService) {
         this.labelService = labelService;
+        this.docService = docService;
     }
 
     @GetMapping("/list")
@@ -25,6 +29,7 @@ public class LabelController {
 
     @GetMapping("/of-doc/{doc-id}")
     public CommonResponse getLabelsOfDoc(@PathVariable("doc-id") String docId){
+        Assert.isTrue(docService.docExist(docId),"文档不存在");
         return RestResponseFactory.createSuccessResponseWithData(labelService.getDocLabel(docId));
     }
 
@@ -45,24 +50,23 @@ public class LabelController {
     @PostMapping("/map/new")
     public CommonResponse addNewMap(@RequestParam("label-name") List<String> labelName,
                                     @RequestParam("doc-id") String docId) throws IOException{
-        if(!labelService.bindLabelsToDoc(labelName,docId)){
-            return RestResponseFactory.createFailedResponse().setMessage("文档不存在");
-        }
+        Assert.isTrue(docService.docExist(docId),"文档不存在");
+        labelService.bindLabelsToDoc(labelName,docId);
         return RestResponseFactory.createSuccessResponse();
     }
 
     @PostMapping("/map/set")
     public CommonResponse setMap(@RequestParam("label-name") Set<String> labelName,
                                     @RequestParam("doc-id") String docId) throws IOException{
-        if(!labelService.rebindLabelsToDoc(labelName,docId)){
-            return RestResponseFactory.createFailedResponse().setMessage("文档不存在");
-        }
+        Assert.isTrue(docService.docExist(docId),"文档不存在");
+        RestResponseFactory.createFailedResponse().setMessage("文档不存在");
         return RestResponseFactory.createSuccessResponse();
     }
 
     @DeleteMapping("/map/{label-name}/{doc-id}")
     public CommonResponse deleteMap(@PathVariable("label-name") String labelName,
                                     @PathVariable("doc-id") String docId) throws IOException{
+        Assert.isTrue(docService.docExist(docId),"文档不存在");
         if(!labelService.removeBind(labelName,docId)){
             return RestResponseFactory.createFailedResponse().setMessage("标签不存在");
         }

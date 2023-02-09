@@ -34,7 +34,7 @@ public interface DiscussionService {
      * @return
      * @throws IOException
      */
-    DiscussionTopic closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException;
+    DiscussionTopic closeTopic(String user,String docAuthor, String docId, String topicId, boolean isAdmin) throws IOException;
 
     /**
      * 回复一个主题

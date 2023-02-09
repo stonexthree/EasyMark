@@ -6,6 +6,7 @@ import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.stonexthree.persistence.PersistenceManager;
 import org.stonexthree.persistence.ObjectPersistenceHandler;
@@ -23,6 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Async
     public void createNotification(String username, Notification.NotificationType type,
                                    String entityDescribe, String entityKey, String message) {
         List<Notification> target = userNotificationMap.get(username);

@@ -22,14 +22,12 @@ public class LabelServiceImpl implements Serializable, LabelService {
      * v: 文档id的集合
      */
     private Map<String,Set<String>> labelDocMap;
-    private DocService docService;
+    //private DocService docService;
     //private LabelDataPersistence persistence;
     private ObjectPersistenceHandler<Map<String,Set<String>>> objectPersistenceHandler;
 
     public LabelServiceImpl(@Value("${app-config.storage.persistence.file.label}") String fileName,
-                            DocService docService,
                             PersistenceManager persistenceManager) throws IOException {
-        this.docService = docService;
         //this.persistence = persistence;
         fileName = fileName==null?"label.data":fileName;
         //this.labelDocMap = persistence.loadLabelMap();
@@ -57,9 +55,7 @@ public class LabelServiceImpl implements Serializable, LabelService {
 
     @Override
     public synchronized boolean bindLabelsToDoc(Collection<String> labels, String docId) throws IOException{
-        if(!docService.docExist(docId)){
-            return false;
-        }
+
         Set<String> changedKeyList = new HashSet<>();
         Set<String> addedKeyList = new HashSet<>();
 
@@ -107,9 +103,7 @@ public class LabelServiceImpl implements Serializable, LabelService {
 
     @Override
     public synchronized boolean rebindLabelsToDoc(Set<String> labels, String docId) throws IOException{
-        if(!docService.docExist(docId)){
-            return false;
-        }
+
         Set<String> addedKeySet = new HashSet<>();
         Set<String> removedKeySet = new HashSet<>();
         Set<String> newKeySet = new HashSet<>();

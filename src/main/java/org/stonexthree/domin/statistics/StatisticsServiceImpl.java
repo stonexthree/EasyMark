@@ -3,9 +3,6 @@ package org.stonexthree.domin.statistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.stonexthree.domin.DocService;
-import org.stonexthree.domin.LabelService;
-import org.stonexthree.domin.UserService;
 import org.stonexthree.persistence.ObjectPersistenceHandler;
 import org.stonexthree.persistence.PersistenceManager;
 

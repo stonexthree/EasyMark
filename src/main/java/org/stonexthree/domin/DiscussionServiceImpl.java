@@ -21,15 +21,10 @@ public class DiscussionServiceImpl implements DiscussionService {
     //private DiscussionsPersistence discussionsPersistence;
     private ObjectPersistenceHandler<List<DiscussionTopic>> discussionsPersistenceHandler;
     private List<DiscussionTopic> topicList;
-    private DocService docService;
-    private UserService userService;
+    //private DocService docService;
 
     public DiscussionServiceImpl(@Value("${app-config.storage.persistence.file.discussion}") String fileName,
-                                 PersistenceManager persistenceManager,
-                                 DocService docService,
-                                 UserService userService) throws IOException {
-        this.userService = userService;
-        this.docService = docService;
+                                 PersistenceManager persistenceManager) throws IOException {
         //this.discussionsPersistence = discussionsPersistence;
         fileName = fileName == null ? "discussions.data" : fileName;
         this.discussionsPersistenceHandler = persistenceManager.getHandler(fileName, ArrayList::new);
@@ -41,7 +36,6 @@ public class DiscussionServiceImpl implements DiscussionService {
     @Override
     @UseNotification(type = {Notification.NotificationType.DOC_REPLY})
     public DiscussionTopic createTopic(String docId, String detail, String author) throws IOException {
-        Assert.isTrue(docService.docExist(docId), "文档不存在");
         String id = UUID.randomUUID().toString();
         DiscussionTopic topic = new DiscussionTopic(docId, id, detail, author);
         topicList.add(topic);
@@ -52,9 +46,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     @UseNotification(type = {Notification.NotificationType.TOPIC_CLOSED})
-    public DiscussionTopic closeTopic(String user, String docId, String topicId, boolean isAdmin) throws IOException {
-        Assert.isTrue(docService.docExist(docId), "文档不存在");
-        String docAuthor = docService.getDocById(docId).getDocAuthor();
+    public DiscussionTopic closeTopic(String user, String docAuthor,String docId, String topicId, boolean isAdmin) throws IOException {
         Optional<DiscussionTopic> targetTopic = topicList.stream().filter(t -> topicId.equals(t.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "关闭的主题不存在");
         //设置关闭类型（来源），前面的会被后面的覆盖
@@ -81,7 +73,6 @@ public class DiscussionServiceImpl implements DiscussionService {
             Notification.NotificationType.TOPIC_REPLY,
             Notification.NotificationType.DISCUSSION_REPLY})
     synchronized public Discussion replyTopic(DiscussionDTO discussionDTO) throws IOException {
-        Assert.isTrue(docService.docExist(discussionDTO.getDocId()), "文档不存在");
         Optional<DiscussionTopic> targetTopic = topicList.stream()
                 .filter(topic -> topic.getTopicId().equals(discussionDTO.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "回复的主题不存在");
@@ -98,7 +89,6 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public List<DiscussionTopicVO> listTopicsByDocId(String docId) {
-        Assert.isTrue(docService.docExist(docId), "文档不存在");
         List<DiscussionTopicVO> result = new ArrayList<>();
         topicList.stream().filter(topic -> docId.equals(topic.getDocId())).forEach(topic -> result.add(new DiscussionTopicVO(topic)));
         return result;
@@ -106,7 +96,6 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public List<DiscussionVO> listDiscussionsByTopicId(String docId, String topicId) {
-        //Assert.isTrue(docService.docExist(docId), "文档不存在");
         Optional<DiscussionTopic> targetTopic = topicList.stream().filter(t -> topicId.equals(t.getTopicId())).findFirst();
         Assert.isTrue(targetTopic.isPresent(), "查询的主题不存在");
         List<DiscussionVO> result = new ArrayList<>();
@@ -116,7 +105,6 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public List<DiscussionTopicVO> listTopicByUser(String username) {
-        Assert.isTrue(userService.userExist(username), "查询的用户不存在");
         List<DiscussionTopicVO> result = new ArrayList<>();
         topicList.stream().filter(topic -> username.equals(topic.getAuthor())).forEach(topic -> result.add(new DiscussionTopicVO(topic)));
         return result;
@@ -124,7 +112,6 @@ public class DiscussionServiceImpl implements DiscussionService {
 
     @Override
     public List<DiscussionVO> listDiscussionByUser(String username) {
-        Assert.isTrue(userService.userExist(username), "查询的用户不存在");
         List<DiscussionVO> result = new ArrayList<>();
         topicList.forEach(topic -> {
             List<Discussion> discussions = topic.getDiscussions();

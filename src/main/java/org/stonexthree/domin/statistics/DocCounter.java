@@ -5,7 +5,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.LabelService;
-import org.stonexthree.domin.UserService;
 import org.stonexthree.domin.model.Document;
 
 import java.time.Instant;
@@ -18,12 +17,10 @@ import java.util.*;
 @Component
 public class DocCounter {
     private DocService docService;
-    private UserService userService;
     private LabelService labelService;
 
-    public DocCounter(DocService docService, UserService userService, LabelService labelService) {
+    public DocCounter(DocService docService,LabelService labelService) {
         this.docService = docService;
-        this.userService = userService;
         this.labelService = labelService;
     }
 
