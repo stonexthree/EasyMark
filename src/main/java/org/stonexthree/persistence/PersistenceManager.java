@@ -38,6 +38,10 @@ public class PersistenceManager {
             {
                 saveFile = new File(getBaseDir(),saveFileName);
                 if(!saveFile.isFile()){
+                    File parentDir = saveFile.getParentFile();
+                    if(!parentDir.isDirectory()){
+                        parentDir.mkdirs();
+                    }
                     saveFile.createNewFile();
                 }
             }
