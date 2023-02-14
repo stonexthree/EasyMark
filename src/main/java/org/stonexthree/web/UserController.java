@@ -125,7 +125,7 @@ public class UserController {
     }
 
     @PutMapping("/nickname")
-    public CommonResponse setUserNickname(@RequestParam String nickname){
+    public CommonResponse setUserNickname(@RequestParam String nickname) throws IOException{
         userService.setUserNickname(SecurityContextHolder.getContext().getAuthentication().getName(),nickname);
         return RestResponseFactory.createSuccessResponse();
     }

@@ -21,6 +21,7 @@ app-config:
           holder: doc.data
           dir: docs
           collect: collect.data
+          export-dir: exports
         picture-dir: pictures
         notification: notification.data
         count: count.data

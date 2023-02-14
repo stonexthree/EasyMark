@@ -1,6 +1,8 @@
 package org.stonexthree.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.LabelService;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/doc")
+@Slf4j
 public class DocumentController {
     private DocService docService;
     private UserService userService;
@@ -196,5 +199,40 @@ public class DocumentController {
     public CommonResponse isDocCollected(@PathVariable("docId")String docId) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return RestResponseFactory.createSuccessResponseWithData(docService.isDocCollected(username,docId));
+    }
+
+    @PostMapping("/doc-archive/task/{type}")
+    public CommonResponse exportDocs(@PathVariable("type") String typeString,
+                                     @RequestParam(value = "target",required = false) String target){
+        DocService.ExportType type;
+        Integer id;
+        switch (typeString){
+            case "all" ->  {
+                Assert.isTrue(userService.hasRoleAdmin(),"导出所有文档：此操作仅运行管理员执行");
+                id = docService.createExportTask(DocService.ExportType.ALL,null);
+            }
+            case "user" -> {
+                Assert.isTrue(target!=null,"导出参数错误");
+                Assert.isTrue(userService.hasRoleAdmin(),"导出指定用户文档：此操作仅允许管理员执行");
+                id = docService.createExportTask(DocService.ExportType.USER,target);
+            }
+            case "me" ->{
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                id = docService.createExportTask(DocService.ExportType.USER,username);
+            }
+            default -> throw new IllegalArgumentException("导出参数错误");
+        }
+        docService.runExportTask(id);
+        return RestResponseFactory.createSuccessResponseWithData(id);
+    }
+
+    @GetMapping("/doc-archive/task/status/{id}")
+    public CommonResponse isTaskFinish(@PathVariable("id")Integer id){
+        return RestResponseFactory.createSuccessResponseWithData(docService.isTaskFinish(id));
+    }
+
+    @GetMapping("/doc-archive/task/result/{id}")
+    public CommonResponse getTaskResult(@PathVariable("id") Integer id){
+        return RestResponseFactory.createSuccessResponseWithData(docService.getTaskResult(id));
     }
 }

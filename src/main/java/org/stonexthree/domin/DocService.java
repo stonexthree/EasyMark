@@ -1,5 +1,7 @@
 package org.stonexthree.domin;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.stonexthree.domin.model.Document;
 
 import java.io.IOException;
@@ -139,4 +141,43 @@ public interface DocService {
      * @return
      */
     Map<String,String> getIdNameMap();
+
+    @Scheduled(cron = "0 0/30 * * * ? ")
+    void cleanTask();
+
+    /**
+     * 导出范围
+     */
+    enum ExportType{
+        ALL,USER,
+    }
+
+
+    /**
+     * 创建一个任务，返回一个任务对应当ID。创建后任务不会执行，需要手动调用 runExportTask(Integer id)
+     * @param type 导出类型，是导出全部还是按用户导出
+     * @param username 如果 type == ExportType.USER ,则这个值会决定导出哪个用户的文档
+     * @return
+     */
+    Integer createExportTask(ExportType type, String username);
+
+
+    void runExportTask(Integer id);
+
+    /**
+     * 查看导出任务状态
+     * @param taskId
+     * @return true:导出完成；false导出未完成
+     * @throws RuntimeException 当任务出现异常时，获取任务状态会抛出异常。
+     */
+    boolean isTaskFinish(Integer taskId);
+
+
+
+    /**
+     * 获取任务结果
+     * @param taskId
+     * @return 返回导出文件的地址
+     */
+    String getTaskResult(Integer taskId);
 }

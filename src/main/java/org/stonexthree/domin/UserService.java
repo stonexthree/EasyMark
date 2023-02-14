@@ -17,7 +17,7 @@ public interface UserService {
     boolean grantAdmin(String name) throws IOException;
     boolean removeAdmin(String userName) throws IOException;
     boolean changePassword(String userName,String newPassword) throws IOException;
-    boolean setUserNickname(String userName,String nickname);
+    boolean setUserNickname(String userName,String nickname) throws IOException;
     String getUserNickname(String userName);
 
     String getCurrentUserNickname();

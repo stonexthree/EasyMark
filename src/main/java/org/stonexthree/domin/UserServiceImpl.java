@@ -152,11 +152,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean setUserNickname(String userName, String nickname) {
+    public boolean setUserNickname(String userName, String nickname) throws IOException {
         if (!userMap.containsKey(userName)) {
             return false;
         }
         userMap.get(userName).setNickname(nickname);
+        objectPersistenceHandler.writeObject(userMap);
         return true;
     }
 

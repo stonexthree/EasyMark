@@ -1,13 +1,14 @@
 package org.stonexthree.domin;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Component;
 import org.stonexthree.domin.model.Document;
 import org.stonexthree.persistence.DocDataPersistence;
 import org.stonexthree.security.util.CryptoUtil;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -23,15 +24,42 @@ public class DocServiceImpl implements DocService {
     /**
      * key:账户名称，value:该账户收藏的文档
      */
-    private Map<String,Set<String>> userCollectMap;
+    private Map<String, Set<String>> userCollectMap;
 
     private TextEncryptor textEncryptor;
+
+    /**
+     * 导出任务表。key: 任务id; value: 导出文件的名称,当导出任务未完成时，为null。
+     */
+    private HashMap<Integer, ExportTask> exportTaskMap;
+    private int taskCount;
+
+    public class ExportTask {
+        private ExportType type;
+        private String username;
+
+        private boolean errorHappened;
+        private String result;
+
+        private Long createTimestamp;
+
+        private ExportTask(ExportType type, String username) {
+            this.type = type;
+            this.username = username;
+            this.errorHappened = false;
+            this.result = null;
+            this.createTimestamp = Instant.now().toEpochMilli();
+        }
+    }
+
 
     public DocServiceImpl(DocDataPersistence docDataPersistence, CryptoUtil cryptoUtil) throws IOException {
         this.docDataPersistence = docDataPersistence;
         this.usernameDocMap = docDataPersistence.loadMap();
         this.userCollectMap = docDataPersistence.loadCollectMap();
-        textEncryptor = cryptoUtil.getTextEncryptor();
+        this.textEncryptor = cryptoUtil.getTextEncryptor();
+        this.exportTaskMap = new HashMap<>();
+        this.taskCount = 0;
     }
 
     private boolean nameUsed(String username, String docName) {
@@ -232,8 +260,8 @@ public class DocServiceImpl implements DocService {
                     .stream()
                     .filter(document -> docId.equals(document.getDocId()))
                     .findFirst().get();
-        }catch (RuntimeException e){
-            if (e instanceof NoSuchElementException || e instanceof NullPointerException){
+        } catch (RuntimeException e) {
+            if (e instanceof NoSuchElementException || e instanceof NullPointerException) {
                 throw new IllegalArgumentException("文档或用户不存在");
             }
             throw e;
@@ -246,11 +274,11 @@ public class DocServiceImpl implements DocService {
     public Set<Document> listDrafts(String username) {
         Set<Document> drafts = new HashSet<>();
         Set<Document> targets = usernameDocMap.get(username);
-        if(targets==null||targets.size()==0){
+        if (targets == null || targets.size() == 0) {
             return drafts;
         }
-        targets.forEach(document->{
-            if(document.isDraft()){
+        targets.forEach(document -> {
+            if (document.isDraft()) {
                 drafts.add(document);
             }
         });
@@ -259,29 +287,29 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public void collectDoc(String username, String docId) throws IOException {
-        if(!docExist(docId)){
+        if (!docExist(docId)) {
             throw new IllegalArgumentException("文档不存在");
         }
-        Set<String> targetSet = this.userCollectMap.containsKey(username)?this.userCollectMap.get(username):new HashSet<>();
+        Set<String> targetSet = this.userCollectMap.containsKey(username) ? this.userCollectMap.get(username) : new HashSet<>();
         targetSet.add(docId);
-        this.userCollectMap.put(username,targetSet);
+        this.userCollectMap.put(username, targetSet);
         docDataPersistence.writeCollectMap(this.userCollectMap);
     }
 
     @Override
     public void removeCollect(String username, String docId) throws IOException {
-        if(!docExist(docId)){
+        if (!docExist(docId)) {
             throw new IllegalArgumentException("文档不存在");
         }
-        Set<String> targetSet = this.userCollectMap.containsKey(username)?this.userCollectMap.get(username):new HashSet<>();
+        Set<String> targetSet = this.userCollectMap.containsKey(username) ? this.userCollectMap.get(username) : new HashSet<>();
         targetSet.remove(docId);
-        this.userCollectMap.put(username,targetSet);
+        this.userCollectMap.put(username, targetSet);
         docDataPersistence.writeCollectMap(this.userCollectMap);
     }
 
     @Override
     public boolean isDocCollected(String username, String docId) {
-        if(this.userCollectMap.containsKey(username)&&this.userCollectMap.get(username).contains(docId)){
+        if (this.userCollectMap.containsKey(username) && this.userCollectMap.get(username).contains(docId)) {
             return true;
         }
         return false;
@@ -289,7 +317,7 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public Set<Document> listCollectedDocument(String username) {
-        if(!this.userCollectMap.containsKey(username)){
+        if (!this.userCollectMap.containsKey(username)) {
             return new HashSet<>();
         }
         return listDocsByIds(this.userCollectMap.get(username));
@@ -297,19 +325,95 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public Map<String, Integer> listUserCreateDocCount() {
-        Map<String,Integer> result = new HashMap<>();
-        usernameDocMap.forEach((key,value)->result.put(key, value.size()));
+        Map<String, Integer> result = new HashMap<>();
+        usernameDocMap.forEach((key, value) -> result.put(key, value.size()));
         return result;
     }
 
     @Override
     public Map<String, String> getIdNameMap() {
-        Map<String,String> result = new HashMap<>();
-        usernameDocMap.forEach((key,value)->{
+        Map<String, String> result = new HashMap<>();
+        usernameDocMap.forEach((key, value) -> {
             value.forEach(document -> {
-                result.put(document.getDocId(),document.getDocName());
+                result.put(document.getDocId(), document.getDocName());
             });
         });
         return result;
+    }
+
+
+    @Override
+    public synchronized Integer createExportTask(ExportType type, String username) {
+        Integer taskId = ++taskCount;
+        ExportTask task = new ExportTask(type, username);
+        exportTaskMap.put(taskId, task);
+        return taskId;
+    }
+
+    @Override
+    @Async
+    public void runExportTask(Integer id) {
+        ExportTask task = exportTaskMap.get(id);
+        if (task == null) {
+            return;
+        }
+        Map<String, String> docs = new HashMap<>();
+        Set<Document> docSet;
+        switch (task.type) {
+            case ALL -> docSet = listAllDoc();
+            case USER -> docSet = listDocByUserName(task.username);
+            default -> docSet = new HashSet<>();
+        }
+        String filename = null;
+        try {
+            for (Document document : docSet) {
+                docs.put(document.getDocName() + ".md", getDocContent(document.getDocId()));
+            }
+            filename = docDataPersistence.exportDocs(id, docs);
+        } catch (IOException e) {
+            e.printStackTrace();
+            task.errorHappened = true;
+        }
+        task.result = filename;
+    }
+
+    @Override
+    public boolean isTaskFinish(Integer taskId) {
+        ExportTask task = exportTaskMap.get(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("任务不存在或过期");
+        }
+        if (task.errorHappened) {
+            throw new RuntimeException("服务内部错误，请联系管理员");
+        }
+        return task.result != null;
+    }
+
+    @Override
+    public String getTaskResult(Integer taskId) {
+        ExportTask task = exportTaskMap.get(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("任务不存在或过期");
+        }
+        return task.result;
+    }
+
+    /**
+     * 清理已完成的任务，同时删除相关的文件
+     */
+    @Override
+    @Scheduled(cron = "0 0/30 * * * ? ")
+    public void cleanTask() {
+        Map<Integer, String> cleanMap = new HashMap<>();
+        long currentTimestamp = Instant.now().toEpochMilli();
+        exportTaskMap.forEach((key, value) -> {
+            if (value.result != null && (currentTimestamp - value.createTimestamp > 3600000)) {
+                cleanMap.put(key, value.result);
+            }
+        });
+        for (Map.Entry<Integer, String> entry : cleanMap.entrySet()) {
+            exportTaskMap.remove(entry.getKey());
+            docDataPersistence.deleteExportFile(entry.getValue());
+        }
     }
 }
