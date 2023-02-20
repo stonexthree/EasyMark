@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.stonexthree.domin.model.Document;
 import org.stonexthree.persistence.DocDataPersistence;
 import org.stonexthree.security.util.CryptoUtil;
@@ -414,6 +415,60 @@ public class DocServiceImpl implements DocService {
         for (Map.Entry<Integer, String> entry : cleanMap.entrySet()) {
             exportTaskMap.remove(entry.getKey());
             docDataPersistence.deleteExportFile(entry.getValue());
+        }
+    }
+
+    @Override
+    public void docHandOver(String sourceUser, String targetUser) throws IOException{
+        Set<Document> sourceDocSet = usernameDocMap.get(sourceUser);
+        Set<Document> targetDocSet = usernameDocMap.get(targetUser);
+        boolean docSetChanged = false;
+        Set<String> sourceUserCollectSet = userCollectMap.get(sourceUser);
+        if(sourceDocSet!=null && targetDocSet!=null){
+            targetDocSet.addAll(sourceDocSet);
+            usernameDocMap.remove(sourceUser);
+            docSetChanged = true;
+        }
+        if(sourceDocSet != null && targetDocSet == null){
+            usernameDocMap.put(targetUser,sourceDocSet);
+            usernameDocMap.remove(sourceUser);
+            docSetChanged = true;
+        }
+        userCollectMap.remove(sourceUser);
+        if(docSetChanged){
+            usernameDocMap.get(targetUser).forEach(document -> document.setDocAuthor(targetUser));
+            docDataPersistence.writeMap(usernameDocMap);
+        }
+        if(sourceUserCollectSet != null){
+            docDataPersistence.writeCollectMap(userCollectMap);
+        }
+    }
+
+    @Override
+    public void docDistribute(String receiver, List<String> docList) throws IOException {
+        Set<Document> adminDocs = usernameDocMap.get("admin");
+        Set<Document> receiverDocs = new HashSet<>();
+        Iterator iterator = adminDocs.iterator();
+        while(iterator.hasNext()){
+            Document document =(Document) iterator.next();
+            if(docList.contains(document.getDocId())){
+                document.setDocAuthor(receiver);
+                iterator.remove();
+                receiverDocs.add(document);
+            }
+        }
+        if(usernameDocMap.containsKey(receiver)){
+            usernameDocMap.get(receiver).addAll(receiverDocs);
+        }else {
+            usernameDocMap.put(receiver,receiverDocs);
+        }
+        try{
+            docDataPersistence.writeMap(usernameDocMap);
+        }catch (IOException e){
+            receiverDocs.forEach(document -> document.setDocAuthor("admin"));
+            adminDocs.addAll(receiverDocs);
+            usernameDocMap.get(receiver).removeAll(receiverDocs);
+            throw e;
         }
     }
 }

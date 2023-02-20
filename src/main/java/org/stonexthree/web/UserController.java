@@ -2,8 +2,10 @@ package org.stonexthree.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.stonexthree.domin.DocService;
 import org.stonexthree.domin.FileService;
 import org.stonexthree.domin.UserService;
 import org.stonexthree.web.utils.CommonResponse;
@@ -27,9 +29,12 @@ public class UserController {
     private UserService userService;
     private FileService fileService;
 
-    public UserController(UserService userService,FileService fileService) {
+    private DocService docService;
+
+    public UserController(UserService userService,FileService fileService,DocService docService) {
         this.userService = userService;
         this.fileService = fileService;
+        this.docService = docService;
     }
 
     @GetMapping("/all")
@@ -52,7 +57,7 @@ public class UserController {
         return RestResponseFactory.createFailedResponse().setMessage("用户已存在");
     }
 
-    @DeleteMapping("/by-name/{name}")
+/*    @DeleteMapping("/by-name/{name}")
     public CommonResponse removeUser(@PathVariable("name") String userName){
         try{
             userService.deleteUser(userName);
@@ -61,7 +66,7 @@ public class UserController {
             return RestResponseFactory.createFailedResponse();
         }
         return RestResponseFactory.createSuccessResponse();
-    }
+    }*/
 
     @PutMapping("/admin/grant")
     public CommonResponse grantAdmin(@RequestParam String username){
@@ -162,6 +167,17 @@ public class UserController {
         }
         String location = fileService.fileUpload(files).get(0);
         userService.changeUserPhoto(SecurityContextHolder.getContext().getAuthentication().getName(),location);
+        return RestResponseFactory.createSuccessResponse();
+    }
+
+    @DeleteMapping("/{username}")
+    public CommonResponse deleteUser(@PathVariable("username") String username,
+                                     @RequestParam(value="receiver",required = false) String receiver) throws IOException{
+        Assert.isTrue(userService.hasRoleAdmin(),"变更用户名：此操作仅允许管理员执行");
+        String receiveUser = receiver ==null?"admin":receiver;
+        Assert.isTrue(userService.userExist(receiveUser),"指定的交接账号不存在");
+        userService.deleteUser(username);
+        docService.docHandOver(username,receiveUser);
         return RestResponseFactory.createSuccessResponse();
     }
 }

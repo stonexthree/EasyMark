@@ -17,6 +17,7 @@ import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -234,5 +235,14 @@ public class DocumentController {
     @GetMapping("/doc-archive/task/result/{id}")
     public CommonResponse getTaskResult(@PathVariable("id") Integer id){
         return RestResponseFactory.createSuccessResponseWithData(docService.getTaskResult(id));
+    }
+
+    @PostMapping("/owner")
+    public CommonResponse distributeDocs(@RequestParam("receiver") String receiver,
+                                         @RequestParam("docId") List<String> docIds)throws IOException{
+        Assert.isTrue(userService.hasRoleAdmin(),"分配文档归属：当前操作仅运行管理员执行");
+        Assert.isTrue(userService.userExist(receiver),"分配文档归属：指定的接收用户不存在");
+        docService.docDistribute(receiver,docIds);
+        return RestResponseFactory.createSuccessResponse();
     }
 }

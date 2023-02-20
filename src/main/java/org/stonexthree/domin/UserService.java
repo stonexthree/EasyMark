@@ -11,6 +11,9 @@ import java.util.Set;
 public interface UserService {
     boolean createUser(String userName,String password) throws IOException;
     void deleteUser(String userName) throws IOException;
+
+    void changUsername(String oldName, String newName) throws IOException;
+
     List<UserVO> getAllUser();
     boolean userExist(String username);
     UserVO getMe();

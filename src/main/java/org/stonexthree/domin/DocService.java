@@ -6,6 +6,7 @@ import org.stonexthree.domin.model.Document;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -144,6 +145,10 @@ public interface DocService {
 
     @Scheduled(cron = "0 0/30 * * * ? ")
     void cleanTask();
+
+    void docHandOver(String sourceUser, String targetUser) throws IOException;
+
+    void docDistribute(String target, List<String> docList) throws IOException;
 
     /**
      * 导出范围

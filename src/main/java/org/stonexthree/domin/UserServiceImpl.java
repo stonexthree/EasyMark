@@ -76,6 +76,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public synchronized void changUsername(String oldName, String newName) throws IOException {
+        UserExtendProxy target;
+        if (!userMap.containsKey(oldName)) {
+            throw new IllegalArgumentException("目标用户不存在");
+        }
+        target = userMap.get(oldName);
+        userMap.remove(oldName);
+        try {
+            createUser(newName, target.getPassword());
+        } catch (IOException e) {
+            userMap.put(oldName, target);
+            throw e;
+        }
+    }
+
+    @Override
     public List<UserVO> getAllUser() {
         List<UserVO> result = new ArrayList<>();
         for (Map.Entry<String, UserExtendProxy> entry : this.userMap.entrySet()) {
@@ -197,7 +213,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getUserPhoto(String username) {
-        if(!this.userMap.containsKey(username)){
+        if (!this.userMap.containsKey(username)) {
             return "";
         }
         return this.userMap.get(username).getPhotoLocation();
@@ -205,20 +221,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, String> listUserPhotos(Set<String> users) {
-        Map<String,String> result = new HashMap<>();
-        users.forEach(user->{
+        Map<String, String> result = new HashMap<>();
+        users.forEach(user -> {
             String photo = "";
-            if (userMap.containsKey(user)){
+            if (userMap.containsKey(user)) {
                 photo = userMap.get(user).getPhotoLocation();
             }
-            result.put(user,photo);
+            result.put(user, photo);
         });
         return result;
     }
 
     @Override
     public void changeUserPhoto(String username, String location) {
-        if(userMap.containsKey(username)){
+        if (userMap.containsKey(username)) {
             userMap.get(username).setPhotoLocation(location);
         }
     }
