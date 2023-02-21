@@ -107,10 +107,10 @@ public class DocumentController {
      * @param labelName
      * @return
      */
-    @PostMapping("/markdown_tags")
+    @PostMapping("/markdown-tags")
     public CommonResponse createDocWithLabel(@RequestParam("content") String content,
                                              @RequestParam("docName") String docName,
-                                             @RequestParam("label-name") Set<String> labelName) throws IOException {
+                                             @RequestParam("labelName") Set<String> labelName) throws IOException {
         try {
             String docId = docService.createDoc(SecurityContextHolder.getContext().getAuthentication().getName(),
                     docName,

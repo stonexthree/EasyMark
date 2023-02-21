@@ -58,26 +58,26 @@ public class DiscussionController {
     }
 
     @GetMapping("/topics/{docId}")
-    public CommonResponse getTopicsByDocId(@PathVariable("docId") String docId) {
+    public CommonResponse listTopicsByDocId(@PathVariable("docId") String docId) {
         Assert.isTrue(docService.docExist(docId),"文档不存在");
         return RestResponseFactory.createSuccessResponseWithData(this.discussionService.listTopicsByDocId(docId));
     }
 
     @GetMapping("/of-topics/{docId}/{topicId}")
-    public CommonResponse getDiscussionsByTopicId(@PathVariable("docId") String docId,
-                                                  @PathVariable("topicId") String topicId) {
+    public CommonResponse listDiscussionsByTopicId(@PathVariable("docId") String docId,
+                                                   @PathVariable("topicId") String topicId) {
         Assert.isTrue(docService.docExist(docId),"文档不存在");
         return RestResponseFactory.createSuccessResponseWithData(this.discussionService.listDiscussionsByTopicId(docId, topicId));
     }
 
     @GetMapping("/topics/my")
-    public CommonResponse getTopicByUser() {
+    public CommonResponse listTopicByUser() {
         String user = SecurityContextHolder.getContext().getAuthentication().getName();
         return RestResponseFactory.createSuccessResponseWithData(this.discussionService.listTopicByUser(user));
     }
 
     @GetMapping("/my")
-    public CommonResponse getDiscussionByUser() {
+    public CommonResponse listDiscussionByUser() {
         String user = SecurityContextHolder.getContext().getAuthentication().getName();
         return RestResponseFactory.createSuccessResponseWithData(this.discussionService.listDiscussionByUser(user));
     }

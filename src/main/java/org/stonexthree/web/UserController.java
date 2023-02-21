@@ -12,9 +12,7 @@ import org.stonexthree.web.utils.CommonResponse;
 import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
 
-import javax.servlet.annotation.MultipartConfig;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public CommonResponse getAllUsers(){
+    public CommonResponse listAllUsers(){
         return RestResponseFactory.createSuccessResponseWithData(userService.getAllUser());
     }
 

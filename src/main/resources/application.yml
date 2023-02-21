@@ -31,7 +31,7 @@ app-config:
 #静态资源相关
 static-files:
   security:
-    #严格模式；严格模式下的api，会在响应中配置合适当的 http状态码 ， 而不是默认返回 200
+    #严格模式；严格模式下的api，会在响应中配置合适当的 http状态码, 而不是默认返回 200
     strict-mode:
       #路径匹配
       path-prefix: /files/picture,/files/others

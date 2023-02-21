@@ -23,7 +23,7 @@ public class LabelController {
     }
 
     @GetMapping("/list")
-    public CommonResponse getAllLabel(){
+    public CommonResponse listAllLabels(){
         return RestResponseFactory.createSuccessResponseWithData(labelService.getAllLabel());
     }
 
