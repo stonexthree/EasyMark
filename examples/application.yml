@@ -11,28 +11,14 @@ server:
       persistent: false
 app-config:
   storage:
-    base-dir: /Users/stonexthree/Documents/practise/temp/myMarkDoc
-    persistence:
-      file:
-        discussion: discussions.data
-        label: label.data
-        user: users.data
-        doc:
-          holder: doc.data
-          dir: docs
-          collect: collect.data
-          export-dir: exports
-        picture-dir: pictures
-        notification: notification.data
-        count: count.data
+    base-dir: /home/easymark/storage
   security:
     password: D3UUB2z2D4pGnXdw
     salt: 4831a5d7a60dc285
-  debug-disabled: true
 #静态资源相关
 static-files:
   security:
-    #严格模式；严格模式下的api，会在响应中配置合适当的 http状态码, 而不是默认返回 200
+    #严格模式；严格模式下的api，会在响应中配置合适当的 http状态码 ， 而不是默认返回 200
     strict-mode:
       #路径匹配
       path-prefix: /files/picture,/files/others

@@ -237,5 +237,10 @@ public class UserServiceImpl implements UserService {
         if (userMap.containsKey(username)) {
             userMap.get(username).setPhotoLocation(location);
         }
+        try {
+            objectPersistenceHandler.writeObject(userMap);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 }

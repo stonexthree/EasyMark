@@ -13,7 +13,9 @@ import org.stonexthree.web.utils.ErrorCodeUtil;
 import org.stonexthree.web.utils.RestResponseFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author stonexthree
@@ -152,7 +154,7 @@ public class UserController {
     }
 
     @GetMapping("/photos")
-    public CommonResponse listUserPhotos(@RequestParam("username")Set<String> usernames){
+    public CommonResponse listUserPhotos(@RequestParam("usernames")Set<String> usernames){
         return RestResponseFactory.createSuccessResponseWithData(userService.listUserPhotos(usernames));
     }
 

@@ -46,12 +46,6 @@ public interface StatisticsService {
     Map.Entry<String,Integer>[] getUserCreateDocCharts(int top);
 
     /**
-     * 移除文档相关的统计数据
-     * @param docId
-     */
-    void removeDoc(String docId);
-
-    /**
      * 统计数据持久化
      * @throws IOException
      */

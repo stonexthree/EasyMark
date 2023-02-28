@@ -22,6 +22,12 @@ public interface DocService {
     Set<Document> listAllDoc();
 
     /**
+     * 获取所有文档的ID
+     * @return
+     */
+    Set<String> listAllDocId();
+
+    /**
      * 列出指定用户下的所有文档，不包括草稿
      * @param username
      * @return

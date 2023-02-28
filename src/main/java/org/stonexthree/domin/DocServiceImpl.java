@@ -5,7 +5,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 import org.stonexthree.domin.model.Document;
 import org.stonexthree.persistence.DocDataPersistence;
 import org.stonexthree.security.util.CryptoUtil;
@@ -176,6 +175,17 @@ public class DocServiceImpl implements DocService {
             //result.addAll(entry.getValue());
             result.addAll(entry.getValue().stream().filter(document -> !document.isDraft()).toList());
         }
+        return result;
+    }
+
+    @Override
+    public Set<String> listAllDocId(){
+        Set<String> result = new HashSet<>();
+        usernameDocMap.forEach((key,value)->
+                value.forEach(document ->
+                        result.add(document.getDocId())
+                )
+        );
         return result;
     }
 

@@ -27,7 +27,7 @@ public class StatisticsServiceImpl implements StatisticsService{
     }
 
     @Override
-    @Scheduled(cron = "0 0 * * * ? ")//每小时刷新一次
+    @Scheduled(cron = "0 0/30 * * * ? ")//每半小时刷新一次
     public void refreshDocCount() {
         this.docCounter.refreshDocViewCharts(countDataHolder);
         this.docCounter.refreshLabelUsedCharts(countDataHolder);
@@ -75,10 +75,5 @@ public class StatisticsServiceImpl implements StatisticsService{
     @Override
     public Map.Entry<String,Integer>[] getUserCreateDocCharts(int top){
         return countDataHolder.getCharts(CountDataHolder.ChartType.USER_CREATE_DOC,top);
-    }
-
-    @Override
-    public void removeDoc(String docId){
-        this.docCounter.removeDoc(countDataHolder,docId);
     }
 }

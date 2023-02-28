@@ -9,7 +9,6 @@ import org.stonexthree.domin.LabelService;
 import org.stonexthree.domin.UserService;
 import org.stonexthree.domin.ViewObjectFactories;
 import org.stonexthree.domin.model.Document;
-import org.stonexthree.domin.statistics.DocCounter;
 import org.stonexthree.domin.statistics.StatisticsService;
 import org.stonexthree.domin.statistics.ViewAdd;
 import org.stonexthree.web.utils.CommonResponse;
@@ -30,7 +29,7 @@ public class DocumentController {
     private LabelService labelService;
     private StatisticsService statisticsService;
 
-    public DocumentController(DocService docService, UserService userService, LabelService labelService,StatisticsService statisticsService) {
+    public DocumentController(DocService docService, UserService userService, LabelService labelService, StatisticsService statisticsService) {
         this.docService = docService;
         this.userService = userService;
         this.labelService = labelService;
@@ -38,9 +37,14 @@ public class DocumentController {
     }
 
     @GetMapping("/list")
-    public CommonResponse getAllDoc() {
+    public CommonResponse listDocs() {
         return RestResponseFactory.createSuccessResponseWithData(
                 ViewObjectFactories.batchToVO(docService.listAllDoc(), userService.getUserNicknameMap()));
+    }
+    @PostMapping("/query/condition")
+    public CommonResponse listDocsById(@RequestParam(value = "id") Set<String> idList) {
+        return RestResponseFactory.createSuccessResponseWithData(
+                    ViewObjectFactories.batchToVO(docService.listDocsByIds(idList), userService.getUserNicknameMap()));
     }
 
     @GetMapping("/list/user-doc/{username}")
@@ -56,7 +60,7 @@ public class DocumentController {
     }
 
     @GetMapping("/markdown/{id}")
-    @ViewAdd(id="id")
+    @ViewAdd(id = "id")
     public CommonResponse getDocContent(@PathVariable("id") String id) throws IOException {
         String content = docService.getDocContent(id);
         if (content == null) {
@@ -80,7 +84,6 @@ public class DocumentController {
             return RestResponseFactory.createSuccessResponse().setMessage("删除成功");
         }
         labelService.removeDocBinds(docId);
-        statisticsService.removeDoc(docId);
         return RestResponseFactory.createFailedResponse().setMessage("删除失败：文件不存在或不属于操作用户");
     }
 
@@ -165,61 +168,61 @@ public class DocumentController {
     }
 
     @PutMapping("/draft/submit")
-    public CommonResponse submitDraft(@RequestParam("doc-id")String docId,
-                                      @RequestParam(value = "label-name",required = false) Set<String>labelName) throws IOException {
-        docService.submitDraft(SecurityContextHolder.getContext().getAuthentication().getName(),docId);
-        if (labelName!=null && labelName.size()!=0){
+    public CommonResponse submitDraft(@RequestParam("doc-id") String docId,
+                                      @RequestParam(value = "label-name", required = false) Set<String> labelName) throws IOException {
+        docService.submitDraft(SecurityContextHolder.getContext().getAuthentication().getName(), docId);
+        if (labelName != null && labelName.size() != 0) {
             labelService.rebindLabelsToDoc(labelName, docId);
         }
         return RestResponseFactory.createSuccessResponse();
     }
 
     @GetMapping("/collections")
-    public CommonResponse listMyCollections(){
+    public CommonResponse listMyCollections() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Set<Document> collections = docService.listCollectedDocument(username);
         return RestResponseFactory.createSuccessResponseWithData(
-                ViewObjectFactories.batchToVO(collections,userService.getUserNicknameMap()));
+                ViewObjectFactories.batchToVO(collections, userService.getUserNicknameMap()));
     }
 
     @PutMapping("/collections/{docId}")
-    public CommonResponse collectDoc(@PathVariable("docId")String docId) throws IOException {
+    public CommonResponse collectDoc(@PathVariable("docId") String docId) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        docService.collectDoc(username,docId);
+        docService.collectDoc(username, docId);
         return RestResponseFactory.createSuccessResponse();
     }
 
     @DeleteMapping("/collections/{docId}")
-    public CommonResponse removeCollectedDoc(@PathVariable("docId")String docId) throws IOException {
+    public CommonResponse removeCollectedDoc(@PathVariable("docId") String docId) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        docService.removeCollect(username,docId);
+        docService.removeCollect(username, docId);
         return RestResponseFactory.createSuccessResponse();
     }
 
     @GetMapping("/collect/status/{docId}")
-    public CommonResponse isDocCollected(@PathVariable("docId")String docId) throws IOException {
+    public CommonResponse isDocCollected(@PathVariable("docId") String docId) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return RestResponseFactory.createSuccessResponseWithData(docService.isDocCollected(username,docId));
+        return RestResponseFactory.createSuccessResponseWithData(docService.isDocCollected(username, docId));
     }
 
     @PostMapping("/doc-archive/task/{type}")
     public CommonResponse exportDocs(@PathVariable("type") String typeString,
-                                     @RequestParam(value = "target",required = false) String target){
+                                     @RequestParam(value = "target", required = false) String target) {
         DocService.ExportType type;
         Integer id;
-        switch (typeString){
-            case "all" ->  {
-                Assert.isTrue(userService.hasRoleAdmin(),"导出所有文档：此操作仅运行管理员执行");
-                id = docService.createExportTask(DocService.ExportType.ALL,null);
+        switch (typeString) {
+            case "all" -> {
+                Assert.isTrue(userService.hasRoleAdmin(), "导出所有文档：此操作仅运行管理员执行");
+                id = docService.createExportTask(DocService.ExportType.ALL, null);
             }
             case "user" -> {
-                Assert.isTrue(target!=null,"导出参数错误");
-                Assert.isTrue(userService.hasRoleAdmin(),"导出指定用户文档：此操作仅允许管理员执行");
-                id = docService.createExportTask(DocService.ExportType.USER,target);
+                Assert.isTrue(target != null, "导出参数错误");
+                Assert.isTrue(userService.hasRoleAdmin(), "导出指定用户文档：此操作仅允许管理员执行");
+                id = docService.createExportTask(DocService.ExportType.USER, target);
             }
-            case "me" ->{
+            case "me" -> {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                id = docService.createExportTask(DocService.ExportType.USER,username);
+                id = docService.createExportTask(DocService.ExportType.USER, username);
             }
             default -> throw new IllegalArgumentException("导出参数错误");
         }
@@ -228,21 +231,21 @@ public class DocumentController {
     }
 
     @GetMapping("/doc-archive/task/status/{id}")
-    public CommonResponse isTaskFinish(@PathVariable("id")Integer id){
+    public CommonResponse isTaskFinish(@PathVariable("id") Integer id) {
         return RestResponseFactory.createSuccessResponseWithData(docService.isTaskFinish(id));
     }
 
     @GetMapping("/doc-archive/task/result/{id}")
-    public CommonResponse getTaskResult(@PathVariable("id") Integer id){
+    public CommonResponse getTaskResult(@PathVariable("id") Integer id) {
         return RestResponseFactory.createSuccessResponseWithData(docService.getTaskResult(id));
     }
 
     @PostMapping("/owner")
     public CommonResponse distributeDocs(@RequestParam("receiver") String receiver,
-                                         @RequestParam("docId") List<String> docIds)throws IOException{
-        Assert.isTrue(userService.hasRoleAdmin(),"分配文档归属：当前操作仅运行管理员执行");
-        Assert.isTrue(userService.userExist(receiver),"分配文档归属：指定的接收用户不存在");
-        docService.docDistribute(receiver,docIds);
+                                         @RequestParam("docId") List<String> docIds) throws IOException {
+        Assert.isTrue(userService.hasRoleAdmin(), "分配文档归属：当前操作仅运行管理员执行");
+        Assert.isTrue(userService.userExist(receiver), "分配文档归属：指定的接收用户不存在");
+        docService.docDistribute(receiver, docIds);
         return RestResponseFactory.createSuccessResponse();
     }
 }

@@ -44,22 +44,13 @@ public class DocCounter {
     }
 
     /**
-     * 从统计中移除文档，当发生文档删除时，应调用这个方法
-     *
-     * @param docId
-     */
-    @Async
-    public void removeDoc(CountDataHolder countDataHolder, String docId) {
-        Document target = docService.getDocById(docId);
-        countDataHolder.removeDoc(target);
-    }
-
-    /**
-     * 更新浏览量排行
+     * 更新浏览量排行,更新的时候会移除已经不在系统中的文档的信息
      */
     @Async
     public void refreshDocViewCharts(CountDataHolder countDataHolder) {
         String start = Instant.now().toString();
+        HashMap<String, Integer> docViewCountMap = countDataHolder.getDocViewCount();
+        docViewCountMap.keySet().retainAll(docService.listAllDocId());
         Map.Entry<String, Integer>[] result = countDataHolder.getDocViewCount().entrySet().stream()
                 .sorted((entry1, entry2) -> entry2.getValue() - entry1.getValue())
                 .toArray(Map.Entry[]::new);
