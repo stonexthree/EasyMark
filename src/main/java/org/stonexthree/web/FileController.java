@@ -21,8 +21,20 @@ public class FileController {
     }
 
 
-    @PostMapping("/upload")
-    public CommonResponse uploadFiles(@RequestParam("file")MultipartFile[] files) throws IOException {
+//    @PostMapping("/upload")
+//    public CommonResponse uploadFiles(@RequestParam("file")MultipartFile[] files) throws IOException {
+//        return RestResponseFactory.createSuccessResponseWithData(fileService.fileUpload(files));
+//    }
+
+    @PostMapping("/picture")
+    public CommonResponse uploadPicture(@RequestParam("file")MultipartFile[] files) throws IOException {
+        for(MultipartFile file : files) {
+            String[] cutArr = file.getOriginalFilename().split("\\.");
+            String extendName = cutArr[cutArr.length - 1].toLowerCase();
+            if(!("png".equals(extendName)||"bmp".equals(extendName)||"jpg".equals(extendName)||"jpeg".equals(extendName)||"svg".equals(extendName)||"gif".equals(extendName))){
+                throw new IllegalArgumentException("上传的图片扩展名不支持");
+            }
+        }
         return RestResponseFactory.createSuccessResponseWithData(fileService.fileUpload(files));
     }
 

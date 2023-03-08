@@ -3,7 +3,7 @@ spring:
     name: EasyMark
   servlet:
     multipart:
-      max-file-size: 50MB
+      max-file-size: 2MB
 server:
   port: 8080
   servlet:

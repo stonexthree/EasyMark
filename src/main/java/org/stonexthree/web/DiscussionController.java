@@ -32,14 +32,25 @@ public class DiscussionController {
         return RestResponseFactory.createSuccessResponse();
     }
 
+    /**
+     * 关闭一个主题，需要提供关闭的说明，这个说明会作为最后一个回复追加在主题的末尾
+     * @param docId
+     * @param topicId
+     * @param description
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/topic/close")
     public CommonResponse closeTopic(@RequestParam("docId") String docId,
-                                     @RequestParam("topicId") String topicId) throws IOException {
+                                     @RequestParam("topicId") String topicId,
+                                     @RequestParam("description") String description ) throws IOException {
         Assert.isTrue(docService.docExist(docId),"文档不存在");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String user = authentication.getName();
         Boolean isAdmin = authentication.getAuthorities().stream().anyMatch(aut -> "ROLE_ADMIN".equals(aut.getAuthority()));
         String docAuthor = docService.getDocById(docId).getDocAuthor();
+        DiscussionDTO lastDiscussion = new DiscussionDTO(docId,topicId,description,user,-1);
+        this.discussionService.replyTopic(lastDiscussion);
         this.discussionService.closeTopic(user,docAuthor, docId, topicId, isAdmin);
         return RestResponseFactory.createSuccessResponse();
     }
